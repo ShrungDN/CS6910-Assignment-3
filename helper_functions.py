@@ -5,6 +5,7 @@ import pandas as pd
 import torch
 from torch.optim import Adam, Adadelta, NAdam, RMSprop, SGD, Adagrad
 import torch.nn as nn
+from torch.nn import LSTM, GRU, RNN
 from torch.nn import NLLLoss, CrossEntropyLoss
 
 import time
@@ -83,16 +84,19 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     encoder_optimizer.zero_grad()
     decoder_optimizer.zero_grad()
 
+    # ADD BATCH PROCESSING HERE AFTER FINISHING OTHER PARTS
+
     input_length = input_tensor.size(0)
     target_length = target_tensor.size(0)
 
-    encoder_outputs = torch.zeros(max_length, encoder.hidden_size, device=device)
+    encoder_outputs = torch.zeros(max_length, encoder.bidirectional_size*encoder.hidden_size, device=device)
 
     loss = 0
 
     for ei in range(input_length):
         # print(ei, input_length, input_tensor[ei])
         encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
+
         # print(input_tensor.data, input_length, ei, encoder_output.shape)
         encoder_outputs[ei] = encoder_output[0, 0]
 
@@ -169,6 +173,17 @@ def get_loss_func(loss_func):
         return NLLLoss
     else:
         raise Exception('Incorrect Loss Function')
+    
+def get_cell_type(cell):
+    if cell == 'LSTM':
+        return LSTM
+    elif cell == 'RNN':
+        return RNN
+    elif cell == 'GRU':
+        return GRU
+    else:
+        raise Exception('Incorrect Cell type')
+
 
 def trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device, print_every=1000):
     LR = config['LR']
@@ -182,7 +197,7 @@ def trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device,
     print_loss_total = 0
     print_acc_total = 0
 
-    
+    # ADD BATCH HERE AND IN TRAIN FN IN THE END AFTER FINISHING REST
 
     encoder_optimizer = OPT(encoder.parameters(), lr=LR)
     decoder_optimizer = OPT(decoder.parameters(), lr=LR)
