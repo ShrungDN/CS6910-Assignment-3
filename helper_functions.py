@@ -126,6 +126,9 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
 
     loss.backward()
 
+    # INSTEAD OF DOING LOSS BACKWARD HERE FOR EACH AND EVERY PAIR, GET A BUNCH OF PAIRS, CALC TOTAL LOSS AND DO LOSS BACKWARD. 
+    # DOING THIS WILL ENABLE BETTER OPTIMIZERS LIKE ADAM TO BE VIABLE
+
     encoder_optimizer.step()
     decoder_optimizer.step()
 
@@ -178,6 +181,8 @@ def trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device,
     start = time.time()
     print_loss_total = 0
     print_acc_total = 0
+
+    
 
     encoder_optimizer = OPT(encoder.parameters(), lr=LR)
     decoder_optimizer = OPT(decoder.parameters(), lr=LR)
@@ -237,7 +242,7 @@ def evaluate(encoder, decoder, input_lang, output_lang, word, device, max_length
         # return decoded_words, decoder_attentions[:di + 1]
         return decoded_words
     
-def evaluateRandomly(encoder, decoder, input_lang, output_lang, pairs, device, n=10):
+def evaluateRandomly(encoder, decoder, input_lang, output_lang, pairs, device, n=20):
     for i in range(n):
         pair = random.choice(pairs)
         print('>', pair[0])

@@ -4,6 +4,8 @@ from parse_args import parse_arguments
 
 def main(data_path, inp_lang_name, out_lang_name, config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print('Device: ', device)
+    
     input_lang, output_lang, pairs = prepareData(data_path, inp_lang_name, out_lang_name, config['MAX_LENGTH'])
 
     hidden_size = 256
