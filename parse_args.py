@@ -22,7 +22,7 @@ def parse_arguments():
     parser.add_argument('-tfr', '--teacher_forcing', type=float, default=0.5, help='Teacher forcing ratio to be used')
     parser.add_argument('-ml', '--max_length', type=int, default=30, help='Max length of training words to be used')
     parser.add_argument('-lr', '--learning_rate', type=float, default=0.01, help='Learning rate used for training')
-    parser.add_argument('-e', '--epochs', type=int, default=5000, help='Number of epochs to train for')
+    parser.add_argument('-e', '--epochs', type=int, default=50000, help='Number of epochs to train for')
     parser.add_argument('-opt', '--optimizer', type=str, default='Adam', help='Optimizer used for training: "Adam", "Adadelta". "Adagrad", "NAdam", "RMSprop" or "SGD"')
     parser.add_argument('-l', '--loss', type=str, default='NLLLoss', help='Loss function used for training: "CrossEntropyLoss", or "NLLLoss"')
     # parser.add_argument('', '', type=str, default='', help='')

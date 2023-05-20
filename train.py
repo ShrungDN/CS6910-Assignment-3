@@ -6,10 +6,6 @@ def main(data_path, inp_lang_name, out_lang_name, config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     input_lang, output_lang, pairs = prepareData(data_path, inp_lang_name, out_lang_name, config['MAX_LENGTH'])
 
-
-    pairs = pairs[1000:1200]
-
-
     hidden_size = 256
     encoder1 = EncoderRNN(input_lang.n_chars, hidden_size, device).to(device)
     # attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_chars, dropout_p=0.1).to(device)
