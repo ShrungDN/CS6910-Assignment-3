@@ -2,28 +2,39 @@ import random
 import time
 import os
 import pandas as pd
+import torch
+from torch.optim import Adam, Adadelta, NAdam, RMSprop, SGD, Adagrad
+import torch.nn as nn
+from torch.nn import NLLLoss, CrossEntropyLoss
 
 import time
 import math
 
-from helper_classes import *
+SOS_token = 0
+EOS_token = 1
 
-###############################################################
+class Language:
+    def __init__(self, name):
+        self.name = name
+        self.char2index = {}
+        self.char2count = {}
+        self.index2char = {0: "SOS", 1: "EOS"}
+        self.n_chars = 2
 
-###############################################################
+    def addWord(self, word):
+        for char in word:
+            self.addChar(char)
 
-# GO THROUGH EACH FUNCTION AND EACH SENTENCE ONCE AND MAKE CHANGES APPROPRIATELY 
-# CHANGE THE ENCODER DECODER CODE TO HAVE LSTM RNN GRU PROPERLY
-###############################################################
+    def addChar(self, char):
+        if char not in self.char2index:
+            self.char2index[char] = self.n_chars
+            self.char2count[char] = 1
+            self.index2char[self.n_chars] = char
+            self.n_chars += 1
+        else:
+            self.char2count[char] += 1
 
-###############################################################
-
-
-import torch.nn.functional as F #import from torch.nn directly?
-MAX_LENGTH = 30
-teacher_forcing_ratio = 0.5
-
-def readLangs(data_path, lang1='eng', lang2='kan', reverse=False):
+def readLangs(data_path, lang1='eng', lang2='kan'):
     train_path = os.path.join(data_path, lang2, lang2 + '_train.csv')
     valid_path = os.path.join(data_path, lang2, lang2 + '_valid.csv')
     test_path = os.path.join(data_path, lang2, lang2 + '_test.csv')
@@ -33,24 +44,17 @@ def readLangs(data_path, lang1='eng', lang2='kan', reverse=False):
     test_df = pd.read_csv(test_path, header=None)
 
     pairs = [(train_df.iloc[i,0], train_df.iloc[i,1]) for i in range(len(train_df))]
-
-    if reverse:
-        pairs = [list(reversed(p)) for p in pairs]
-        input_lang = Language(lang2)
-        output_lang = Language(lang1)
-    else:
-        input_lang = Language(lang1)
-        output_lang = Language(lang2)
-
+    input_lang = Language(lang1)
+    output_lang = Language(lang2)
     return input_lang, output_lang, pairs
 
-def filterPairs(pairs):
+def filterPairs(pairs, MAX_LENGTH):
     return [p for p in pairs if (len(p[0]) <= MAX_LENGTH and len(p[1]) <= MAX_LENGTH)]
 
-def prepareData(data_path, lang1, lang2, reverse=False):
-    input_lang, output_lang, pairs = readLangs(data_path, lang1, lang2, reverse)
+def prepareData(data_path, lang1, lang2, MAX_LENGTH):
+    input_lang, output_lang, pairs = readLangs(data_path, lang1, lang2)
     print("Read %s word pairs" % len(pairs))
-    pairs = filterPairs(pairs)
+    pairs = filterPairs(pairs, MAX_LENGTH)
     print("Counting chars...")
     for pair in pairs:
         input_lang.addWord(pair[0])
@@ -73,7 +77,7 @@ def tensorsFromPair(input_lang, output_lang, pair, device):
     target_tensor = tensorFromChar(output_lang, pair[1], device)
     return (input_tensor, target_tensor)
 
-def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device, max_length=30):
+def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, teacher_forcing_ratio, max_length, device):
     encoder_hidden = encoder.initHidden()
 
     encoder_optimizer.zero_grad()
@@ -139,39 +143,64 @@ def timeSince(since, percent):
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
-def trainIters(encoder, decoder, input_lang, output_lang, pairs, n_iters, device, print_every=1000, plot_every=100, learning_rate=0.01):
+def get_optimizer(opt):
+    if opt == 'Adam':
+        return Adam
+    elif opt == 'Adadelta':
+        return Adadelta
+    elif opt == 'Adagrad':
+        return Adagrad
+    elif opt == 'NAdam':
+        return NAdam
+    elif opt == 'RMSprop':
+        return RMSprop
+    elif opt == 'SGD':
+        return SGD
+    else:
+        raise Exception('Incorrect Optimizer')
+    
+def get_loss_func(loss_func):
+    if loss_func == 'CrossEntropyLoss':
+        return CrossEntropyLoss
+    elif loss_func == 'NLLLoss':
+        return NLLLoss
+    else:
+        raise Exception('Incorrect Loss Function')
+
+def trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device, print_every=1000):
+    LR = config['LR']
+    N_ITERS = config['N_ITERS']
+    OPT = get_optimizer(config['OPTIM'])
+    LOSS_FUNC = get_loss_func(config['LOSS'])
+    TFR = config['TFR']
+    MAX_LENGTH = config['MAX_LENGTH']
+
     start = time.time()
-    plot_losses = []
-    print_loss_total = 0  # Reset every print_every
-    plot_loss_total = 0  # Reset every plot_every
+    print_loss_total = 0
+    print_acc_total = 0
 
-    encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
-    decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
-    training_pairs = [tensorsFromPair(input_lang, output_lang, random.choice(pairs), device) for i in range(n_iters)]
-    criterion = nn.NLLLoss()
+    encoder_optimizer = OPT(encoder.parameters(), lr=LR)
+    decoder_optimizer = OPT(decoder.parameters(), lr=LR)
+    training_pairs = [tensorsFromPair(input_lang, output_lang, random.choice(pairs), device) for i in range(N_ITERS)]
+    criterion = LOSS_FUNC()
 
-    for iter in range(1, n_iters + 1):
+    for iter in range(1, N_ITERS + 1):
         training_pair = training_pairs[iter - 1]
         input_tensor = training_pair[0]
         target_tensor = training_pair[1]
 
-        loss = train(input_tensor, target_tensor, encoder,
-                     decoder, encoder_optimizer, decoder_optimizer, criterion, device)
+        loss = train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, TFR, MAX_LENGTH, device)
         print_loss_total += loss
-        plot_loss_total += loss
 
         if iter % print_every == 0:
             print_loss_avg = print_loss_total / print_every
             print_loss_total = 0
-            print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters),
-                                         iter, iter / n_iters * 100, print_loss_avg))
+            print('%s (%d %d%%) %.4f' % (timeSince(start, iter / N_ITERS),
+                                         iter, iter / N_ITERS * 100, print_loss_avg))
 
-        if iter % plot_every == 0:
-            plot_loss_avg = plot_loss_total / plot_every
-            plot_losses.append(plot_loss_avg)
-            plot_loss_total = 0
 
 def evaluate(encoder, decoder, input_lang, output_lang, word, device, max_length=30):
+    # CHANGE DECODED WORDS TO DECODER CHARS AND SO ON
     with torch.no_grad():
         input_tensor = tensorFromChar(input_lang, word, device)
         input_length = input_tensor.size()[0]
@@ -189,7 +218,7 @@ def evaluate(encoder, decoder, input_lang, output_lang, word, device, max_length
         decoder_hidden = encoder_hidden
 
         decoded_words = []
-        decoder_attentions = torch.zeros(max_length, max_length)
+        # decoder_attentions = torch.zeros(max_length, max_length)
 
         for di in range(max_length):
             # decoder_output, decoder_hidden, decoder_attention = decoder(
