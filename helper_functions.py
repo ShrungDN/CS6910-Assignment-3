@@ -80,6 +80,7 @@ def tensorsFromPair(input_lang, output_lang, pair, device):
 
 def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, teacher_forcing_ratio, max_length, device):
     encoder_hidden = encoder.initHidden()
+    encoder_cell_state = encoder.initCellState()
 
     encoder_optimizer.zero_grad()
     decoder_optimizer.zero_grad()
@@ -95,14 +96,21 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
 
     for ei in range(input_length):
         # print(ei, input_length, input_tensor[ei])
-        encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
+        if encoder.cell_type != 'LSTM':
+            encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden, None)
+        else:
+            encoder_output, encoder_hidden, encoder_cell_state = encoder(input_tensor[ei], encoder_hidden, encoder_cell_state)
 
         # print(input_tensor.data, input_length, ei, encoder_output.shape)
         encoder_outputs[ei] = encoder_output[0, 0]
 
     decoder_input = torch.tensor([[SOS_token]], device=device)
 
-    decoder_hidden = encoder_hidden
+    if decoder.cell_type != 'LSTM':
+        decoder_hidden = encoder_hidden
+    else:
+        decoder_hidden = encoder_hidden
+        decoder_cell_state = encoder_cell_state
 
     use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
 
@@ -111,7 +119,10 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
         for di in range(target_length):
             # decoder_output, decoder_hidden, decoder_attention = decoder(
             #     decoder_input, decoder_hidden, encoder_outputs)
-            decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden)
+            if decoder.cell_type != 'LSTM':
+                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
+            else:
+                decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             loss += criterion(decoder_output, target_tensor[di])
             decoder_input = target_tensor[di]  # Teacher forcing
 
@@ -120,7 +131,10 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
         for di in range(target_length):
             # decoder_output, decoder_hidden, decoder_attention = decoder(
             #     decoder_input, decoder_hidden, encoder_outputs)
-            decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden)
+            if decoder.cell_type != 'LSTM':
+                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
+            else:
+                decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.topk(1)
             decoder_input = topi.squeeze().detach()  # detach from history as input
 
@@ -215,26 +229,30 @@ def trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device,
         if iter % print_every == 0:
             print_loss_avg = print_loss_total / print_every
             print_loss_total = 0
-            print('%s (%d %d%%) %.4f' % (timeSince(start, iter / N_ITERS),
-                                         iter, iter / N_ITERS * 100, print_loss_avg))
+            print('%s (%d %d%%) %.4f' % (timeSince(start, iter / N_ITERS), iter, iter / N_ITERS * 100, print_loss_avg))
 
 
-def evaluate(encoder, decoder, input_lang, output_lang, word, device, max_length=30):
+def evaluate(encoder, decoder, input_lang, output_lang, word, max_length, device):
     # CHANGE DECODED WORDS TO DECODER CHARS AND SO ON
     with torch.no_grad():
         input_tensor = tensorFromChar(input_lang, word, device)
         input_length = input_tensor.size()[0]
         encoder_hidden = encoder.initHidden()
+        encoder_cell_state = encoder.initCellState()
 
         encoder_outputs = torch.zeros(max_length, encoder.bidirectional_size*encoder.hidden_size, device=device)
 
         for ei in range(input_length):
-            encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
+            if encoder.cell_type != 'LSTM':
+                encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden, None)
+            else:
+                encoder_output, encoder_hidden, encoder_cell_state = encoder(input_tensor[ei], encoder_hidden, encoder_cell_state)
             encoder_outputs[ei] += encoder_output[0, 0]
 
         decoder_input = torch.tensor([[SOS_token]], device=device)  # SOS
 
         decoder_hidden = encoder_hidden
+        decoder_cell_state = encoder_cell_state
 
         decoded_words = []
         # decoder_attentions = torch.zeros(max_length, max_length)
@@ -243,7 +261,10 @@ def evaluate(encoder, decoder, input_lang, output_lang, word, device, max_length
             # decoder_output, decoder_hidden, decoder_attention = decoder(
             #     decoder_input, decoder_hidden, encoder_outputs)
             # decoder_attentions[di] = decoder_attention.data
-            decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden)
+            if decoder.cell_type != 'LSTM':
+                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
+            else:
+                decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.data.topk(1)
             if topi.item() == EOS_token:
                 decoded_words.append('<EOS>')
@@ -256,13 +277,13 @@ def evaluate(encoder, decoder, input_lang, output_lang, word, device, max_length
         # return decoded_words, decoder_attentions[:di + 1]
         return decoded_words
     
-def evaluateRandomly(encoder, decoder, input_lang, output_lang, pairs, device, n=20):
+def evaluateRandomly(encoder, decoder, input_lang, output_lang, pairs, max_length, device, n=20):
     for i in range(n):
         pair = random.choice(pairs)
         print('>', pair[0])
         print('=', pair[1])
         # output_words, attentions = evaluate(encoder, decoder, pair[0])
-        output_chars = evaluate(encoder, decoder, input_lang, output_lang, pair[0], device)
+        output_chars = evaluate(encoder, decoder, input_lang, output_lang, pair[0], max_length, device)
         output_word = ''.join(output_chars)
         print('<', output_word)
         print('')
