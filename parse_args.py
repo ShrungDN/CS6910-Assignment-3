@@ -13,7 +13,7 @@ def parse_arguments():
     parser.add_argument('-wl', '--wandb_log', type=str, default='False', help='If "True", results are logged into WandB, specified by wandb_project and wandb_entity')
          
     parser.add_argument('-es', '--embedding_size', type=int, default=128, help='Embedding Size')
-    parser.add_argument('-nl', '--num_layers', type=int, default=1, help='Number of Encoder-Decoder Layers')
+    parser.add_argument('-nl', '--num_layers', type=int, default=2, help='Number of Encoder-Decoder Layers')
     parser.add_argument('-hs', '--hidden_size', type=int, default=256, help='Hidden Layer Size')
     parser.add_argument('-c', '--cell', type=str, default='GRU', help='Cell type: "RNN", "GRU" or "LSTM"')
     parser.add_argument('-bi', '--bidirectional', type=str, default='True', help='Biderictional Cell: "True" or "False')

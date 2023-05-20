@@ -25,7 +25,7 @@ class EncoderRNN(nn.Module):
         return output, hidden
 
     def initHidden(self):
-        return torch.zeros(self.bidirectional_size, 1, self.hidden_size, device=self.device)
+        return torch.zeros(self.bidirectional_size*self.num_layers, 1, self.hidden_size, device=self.device)
     
 class DecoderRNN(nn.Module):
     def __init__(self, cell_type, output_size, embedding_size, hidden_size, num_layers, bidirectional, dropout, device):
@@ -54,4 +54,4 @@ class DecoderRNN(nn.Module):
         return output, hidden
 
     def initHidden(self):
-        return torch.zeros(self.bidirectional_size, 1, self.hidden_size, device=self.device)
+        return torch.zeros(self.bidirectional_size*self.num_layers, 1, self.hidden_size, device=self.device)

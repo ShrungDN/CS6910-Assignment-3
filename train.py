@@ -22,7 +22,7 @@ def main(data_path, inp_lang_name, out_lang_name, config):
 
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
     # return loss acc etc here
-    trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device, print_every=1000)
+    trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device, print_every=100)
 
     # return other stuff here
     evaluateRandomly(encoder, decoder, input_lang, output_lang, pairs, device)
