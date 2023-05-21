@@ -29,14 +29,14 @@ SC2 = {
     'parameters': 
     {
         'cell': {'values': ["RNN", "GRU", "LSTM"]},
-        'embedding_size': {'values': [64, 128, 256]},
+        'embedding_size': {'values': [128, 256, 512]},
         'num_layers': {'values': [1, 2, 3]},
-        'hidden_size': {'values': [64, 128, 256]},
+        'hidden_size': {'values': [128, 256, 512]},
         'bidirectional': {'values': ['True', 'False']},
         'dropout': {'values': [0, 0.2]},
         'teacher_forcing': {'values': [0.5]},
         'max_length': {'values': [30]},
-        'learning_rate': {'values': [0.01, 0.001]},
+        'learning_rate': {'values': [0.1, 0.01]},
         'epochs': {'values': [50000]},
         'optimizer': {'values': ['SGD']},
         'loss': {'values': ['NLLLoss']},
