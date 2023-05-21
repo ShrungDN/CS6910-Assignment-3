@@ -129,6 +129,7 @@ def get_cell_type(cell):
         raise Exception('Incorrect Cell type')
 
 def train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid_pairs, config, device, print_every=1000):
+    print('Training...')
     LR = config['LR']
     N_ITERS = config['N_ITERS']
     OPT = get_optimizer(config['OPTIM'])
@@ -169,8 +170,10 @@ def train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid
             print_acc_avg = print_acc_total / print_every
             print_loss_total = 0
             print_acc_total = 0
+            print('Validating...')
             val_loss, val_acc = validIters(encoder, decoder, input_lang, output_lang, valid_pairs, config['LOSS'], MAX_LENGTH, device)
             print('%s (%d %d%%) Training: Loss = %.4f Accuracy = %.04f Validation: Loss = %.4f Accuracy = %.04f' % (timeSince(start, iter / N_ITERS), iter, iter / N_ITERS * 100, print_loss_avg, print_acc_avg, val_loss, val_acc))
+            print('Logging...')
             metrics['iters'].append(iter)
             metrics['train_loss'].append(print_loss_avg)
             metrics['train_acc'].append(print_acc_avg)
