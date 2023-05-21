@@ -67,6 +67,30 @@ SC3 = {
     }
 }
 
+SC4 = {
+    'name': 'SC4',
+    'method': 'bayes',
+    'name': 'sweep',
+    'metric': {'goal': 'minimize', 'name': 'val_loss'},
+    'parameters': 
+    {
+        'cell': {'values': ["RNN", "GRU", "LSTM"]},
+        'embedding_size': {'values': [128, 256, 512]},
+        'num_layers': {'values': [1, 2, 3]},
+        'hidden_size': {'values': [128, 256, 512]},
+        'bidirectional': {'values': ['True', 'False']},
+        'dropout': {'values': [0, 0.2]},
+        'teacher_forcing': {'values': [0.5]},
+        'max_length': {'values': [30]},
+        'learning_rate': {'values': [0.1, 0.01]},
+        'epochs': {'values': [50000]},
+        'optimizer': {'values': ['SGD']},
+        'loss': {'values': ['NLLLoss']},
+        'attention': {'values': ['True']},
+    },
+    'early_terminate': {'type': 'hyperband', 'max_iter':5, 's':5, 'eta':1}
+}
+
 def get_config(name):
     if name == 'SC1':
         return SC1
@@ -74,8 +98,8 @@ def get_config(name):
         return SC2
     elif name == 'SC3':
         return SC3
-    # elif name == 'SC2':
-    #     return SC2
+    elif name == 'SC4':
+        return SC4
     # elif name == 'SC3':
     #     return SC3
     # elif name == 'SC4_1':
