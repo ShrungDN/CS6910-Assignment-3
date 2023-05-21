@@ -21,11 +21,34 @@ SC1 = {
     }
 }
 
+SC2 = {
+    'name': 'SC2',
+    'method': 'random',
+    'name': 'sweep',
+    'metric': {'goal': 'maximize', 'name': 'val_acc'},
+    'parameters': 
+    {
+        'cell': {'values': ["RNN", "GRU", "LSTM"]},
+        'embedding_size': {'values': [64, 128, 256]},
+        'num_layers': {'values': [1, 2, 3]},
+        'hidden_size': {'values': [64, 128, 256]},
+        'bidirectional': {'values': ['True', 'False']},
+        'dropout': {'values': [0, 0.2]},
+        'teacher_forcing': {'values': [0.5]},
+        'max_length': {'values': [30]},
+        'learning_rate': {'values': [0.01, 0.001]},
+        'epochs': {'values': [50000]},
+        'optimizer': {'values': ['SGD']},
+        'loss': {'values': ['NLLLoss']},
+        'attention': {'values': ['False']},
+    }
+}
+
 def get_config(name):
     if name == 'SC1':
         return SC1
-    # elif name == 'SC1_2':
-    #     return SC1_2
+    elif name == 'SC2':
+        return SC2
     # elif name == 'SC1_3':
     #     return SC1_3
     # elif name == 'SC2':

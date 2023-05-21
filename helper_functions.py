@@ -308,6 +308,8 @@ def validIters(encoder, decoder, input_lang, output_lang, pairs, criterion, max_
         training_pairs = [tensorsFromPair(input_lang, output_lang, pairs[i], device) for i in range(len(pairs))]
 
         for iter in range(1, N_ITERS + 1):
+            if iter % 1000:
+                print(iter)
             training_pair = training_pairs[iter - 1]
             input_tensor = training_pair[0]
             target_tensor = training_pair[1]
