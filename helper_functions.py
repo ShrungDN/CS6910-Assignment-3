@@ -244,7 +244,7 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
                     decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
                 if decoder.attention:
-                    decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
+                    decoder_output, decoder_hidden, decoder_attention, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
                 else:
                     decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.topk(1)
@@ -273,7 +273,7 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
                     decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
                 if decoder.attention:
-                    decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
+                    decoder_output, decoder_hidden, decoder_attention, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
                 else:
                     decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.topk(1)
@@ -369,7 +369,7 @@ def valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, 
                     decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
                 if decoder.attention:
-                    decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
+                    decoder_output, decoder_hidden, decoder_attention, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
                 else:
                     decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.topk(1)
@@ -425,7 +425,7 @@ def predict(encoder, decoder, input_lang, output_lang, word, max_length, device)
                     decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
                 if decoder.attention:
-                    decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
+                    decoder_output, decoder_hidden, decoder_attention, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
                 else:
                     decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.data.topk(1)
