@@ -3,7 +3,10 @@ import pickle
 from helper_functions import *
 from train import *
 
-model_path = 'D:\IITM Academic Stuff\Sem 8 Books\CS6910\CS6910-Assignment-3\models\LSTM_False_0.358154296875\\'
+args = parse_arguments()
+
+# model_path = 'D:\IITM Academic Stuff\Sem 8 Books\CS6910\CS6910-Assignment-3\models\LSTM_False_0.358154296875\\'
+model_path = args.load_location
 
 with open(model_path+'decoder', 'rb') as file:
     decoder = pickle.load(file)

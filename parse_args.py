@@ -7,6 +7,7 @@ def parse_arguments():
     parser.add_argument('-il', '--input_lang', type=str, default='eng', help='Input Language name')
     parser.add_argument('-ol', '--output_lang', type=str, default='kan', help='Output Language name')
     parser.add_argument('-sl', '--save_location', type=str, default='./models/', help='file location for saving models')
+    parser.add_argument('-ll', '--load_location', type=str, default='./models/', help='file location for saving models')
 
     parser.add_argument('-wp', '--wandb_project', type=str, default='ME19B168_CS6910_Assignment3', help='Project name on WandB')
     parser.add_argument('-we', '--wandb_entity', type=str, default='ME19B168', help='Username on WandB')
