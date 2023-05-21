@@ -22,7 +22,7 @@ def main(data_path, inp_lang_name, out_lang_name, config):
 
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
     # return loss acc etc here
-    metrics = train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid_pairs, config, device, print_every=1000)
+    metrics = train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid_pairs, config, device, print_every=config['LF'])
 
     
     # validIters(encoder, decoder, input_lang, output_lang, valid_pairs, config['LOSS'], config['MAX_LENGTH'], device)
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         'N_ITERS':args.epochs,
         'OPTIM':args.optimizer,
         'LOSS':args.loss,
-        # '':,
+        'LF':args.log_frequency,
         # '':,
         # '':,
     }
