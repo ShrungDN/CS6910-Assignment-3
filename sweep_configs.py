@@ -44,13 +44,36 @@ SC2 = {
     }
 }
 
+SC3 = {
+    'name': 'SC3',
+    'method': 'bayes',
+    'name': 'sweep',
+    'metric': {'goal': 'maximize', 'name': 'val_acc'},
+    'parameters': 
+    {
+        'cell': {'values': ["RNN", "GRU", "LSTM"]},
+        'embedding_size': {'values': [128, 256, 512]},
+        'num_layers': {'values': [1, 2, 3]},
+        'hidden_size': {'values': [128, 256, 512]},
+        'bidirectional': {'values': ['True', 'False']},
+        'dropout': {'values': [0, 0.2]},
+        'teacher_forcing': {'values': [0.5]},
+        'max_length': {'values': [30]},
+        'learning_rate': {'values': [0.1, 0.01]},
+        'epochs': {'values': [50000]},
+        'optimizer': {'values': ['SGD']},
+        'loss': {'values': ['NLLLoss']},
+        'attention': {'values': ['True']},
+    }
+}
+
 def get_config(name):
     if name == 'SC1':
         return SC1
     elif name == 'SC2':
         return SC2
-    # elif name == 'SC1_3':
-    #     return SC1_3
+    elif name == 'SC3':
+        return SC3
     # elif name == 'SC2':
     #     return SC2
     # elif name == 'SC3':
