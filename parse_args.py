@@ -7,9 +7,9 @@ def parse_arguments():
     parser.add_argument('-il', '--input_lang', type=str, default='eng', help='Input Language name')
     parser.add_argument('-ol', '--output_lang', type=str, default='kan', help='Output Language name')
 
-    parser.add_argument('-wp', '--wandb_project', type=str, default='test-3', help='Project name on WandB')
+    parser.add_argument('-wp', '--wandb_project', type=str, default='ME19B168_CS6910_Assignment3', help='Project name on WandB')
     parser.add_argument('-we', '--wandb_entity', type=str, default='ME19B168', help='Username on WandB')
-    parser.add_argument('-wn', '--wandb_name', type=str, default='test', help='Display name of run on WandB')
+    parser.add_argument('-wn', '--wandb_name', type=str, default='ME19B168', help='Display name of run on WandB')
     parser.add_argument('-wl', '--wandb_log', type=str, default='False', help='If "True", results are logged into WandB, specified by wandb_project and wandb_entity')
          
     parser.add_argument('-es', '--embedding_size', type=int, default=128, help='Embedding Size')
@@ -26,7 +26,6 @@ def parse_arguments():
     parser.add_argument('-l', '--loss', type=str, default='NLLLoss', help='Loss function used for training: "CrossEntropyLoss", or "NLLLoss"')
     parser.add_argument('-lf', '--log_frequency', type=int, default=1, help='Number of iters required for next log')
     parser.add_argument('-att', '--attention', type=str, default='True', help='Whether to choose attention mechanism')
-    # parser.add_argument('', '', type=str, default='', help='')
 
     parser.add_argument('-sc', '--sweep_config', type=str, default='SC1', help='Used with wandb_train.py to choose which sweep config to use')
 
