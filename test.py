@@ -28,8 +28,11 @@ with open(model_path+'config_max_length', 'rb') as file:
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 test_loss, test_acc, test_attentions = validIters(encoder, decoder, input_lang, output_lang, test_pairs, config_loss, config_max_length, device)
-print(test_loss, test_acc)
+print('Test Loss:', test_loss)
+print('Test Accuracy:', test_acc)
 predictRandomly(encoder, decoder, input_lang, output_lang, test_pairs, config_max_length, device, 30)
 if test_attentions is not None:
-        plt.matshow(test_attentions)
+        
+        fig = plt.matshow(test_attentions)
+        fig.save('Attentions')
         plt.show()
