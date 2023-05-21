@@ -59,6 +59,6 @@ if __name__ == '__main__':
 
     metrics, test_metrics = main(args.data_path, args.input_lang, args.output_lang, config, eval_test=True)
     print(metrics, test_metrics)
-    if test_metrics is not None:
+    if test_metrics['test_attentions'] is not None:
         plt.matshow(test_metrics['test_attentions'])
         plt.show()
