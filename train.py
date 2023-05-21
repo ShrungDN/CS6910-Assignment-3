@@ -2,6 +2,8 @@ from helper_functions import *
 from models import *
 from parse_args import parse_arguments
 import matplotlib.pyplot as plt
+import pickle
+import os
 
 def main(data_path, inp_lang_name, out_lang_name, config, eval_test=False):
     CELL = config['CELL']
@@ -25,6 +27,23 @@ def main(data_path, inp_lang_name, out_lang_name, config, eval_test=False):
     metrics = train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid_pairs, config, device, print_every=config['LF'])
 
     predictRandomly(encoder, decoder, input_lang, output_lang, valid_pairs, config['MAX_LENGTH'], device, 20)
+
+    filename = args.save_location + '{}_{}_{}/'.format(config['CELL'], config['ATTENTION'], metrics['val_acc'][-1])
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename+'encoder', 'wb') as file:
+        pickle.dump(encoder, file)
+    with open(filename+'decoder', 'wb') as file:
+        pickle.dump(decoder, file)
+    with open(filename+'inp_lang', 'wb') as file:
+        pickle.dump(input_lang, file)
+    with open(filename+'out_lang', 'wb') as file:
+        pickle.dump(output_lang, file)
+    with open(filename+'test_pairs', 'wb') as file:
+        pickle.dump(test_pairs, file)
+    with open(filename+'config_loss', 'wb') as file:
+        pickle.dump(config['LOSS'], file)
+    with open(filename+'config_max_length', 'wb') as file:
+        pickle.dump(config['MAX_LENGTH'], file)
 
     if not eval_test:
         return metrics, None
@@ -55,6 +74,7 @@ if __name__ == '__main__':
         'LOSS':args.loss,
         'LF':args.log_frequency,
         'ATTENTION':args.attention,
+        'SAVE_LOCATION':args.save_location
     }
 
     metrics, test_metrics = main(args.data_path, args.input_lang, args.output_lang, config, eval_test=True)
@@ -62,3 +82,6 @@ if __name__ == '__main__':
     if test_metrics['test_attentions'] is not None:
         plt.matshow(test_metrics['test_attentions'])
         plt.show()
+
+    
+    

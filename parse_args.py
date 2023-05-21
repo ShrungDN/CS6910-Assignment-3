@@ -28,6 +28,6 @@ def parse_arguments():
     parser.add_argument('-att', '--attention', type=str, default='True', help='Whether to choose attention mechanism')
 
     parser.add_argument('-sc', '--sweep_config', type=str, default='SC1', help='Used with wandb_train.py to choose which sweep config to use')
-
+    parser.add_argument('-sl', '--save_location', type=str, default='./models/', help='file location for saving models')
     args = parser.parse_args()
     return args
