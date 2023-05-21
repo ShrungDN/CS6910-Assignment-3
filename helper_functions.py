@@ -208,8 +208,6 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     encoder_optimizer.zero_grad()
     decoder_optimizer.zero_grad()
 
-    # ADD BATCH PROCESSING HERE AFTER FINISHING OTHER PARTS
-
     input_length = input_tensor.size(0)
     target_length = target_tensor.size(0)
 
@@ -241,11 +239,14 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
             #     decoder_input, decoder_hidden, encoder_outputs)
             if decoder.cell_type != 'LSTM':
                 if decoder.attention:
-                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
+                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs, None)
                 else:
                     decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
-                decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
+                if decoder.attention:
+                    decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
+                else:
+                    decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.topk(1)
             decoded_char = topi.squeeze().detach()  # detach from history as input
             decoded_chars.append(decoded_char.item())
@@ -257,13 +258,24 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
         for di in range(target_length):
             # decoder_output, decoder_hidden, decoder_attention = decoder(
             #     decoder_input, decoder_hidden, encoder_outputs)
+            # if decoder.cell_type != 'LSTM':
+            #     if decoder.attention:
+            #         decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
+            #     else:
+            #         decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
+            # else:
+            #     decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
+
             if decoder.cell_type != 'LSTM':
                 if decoder.attention:
-                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
+                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs, None)
                 else:
                     decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
-                decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
+                if decoder.attention:
+                    decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
+                else:
+                    decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.topk(1)
             decoder_input = topi.squeeze().detach()  # detach from history as input
             decoded_chars.append(decoder_input.item())
@@ -352,12 +364,14 @@ def valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, 
             #     decoder_input, decoder_hidden, encoder_outputs)
             if decoder.cell_type != 'LSTM':
                 if decoder.attention:
-                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
-                    decoder_attentions[di] = decoder_attention.data
+                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs, None)
                 else:
                     decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
-                decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
+                if decoder.attention:
+                    decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
+                else:
+                    decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.topk(1)
             decoder_input = topi.squeeze().detach()  # detach from history as input
             decoded_chars.append(decoder_input.item())
@@ -406,11 +420,14 @@ def predict(encoder, decoder, input_lang, output_lang, word, max_length, device)
             # decoder_attentions[di] = decoder_attention.data
             if decoder.cell_type != 'LSTM':
                 if decoder.attention:
-                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
+                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs, None)
                 else:
                     decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
-                decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
+                if decoder.attention:
+                    decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
+                else:
+                    decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.data.topk(1)
             if topi.item() == EOS_token:
                 decoded_words.append('<EOS>')

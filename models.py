@@ -100,7 +100,7 @@ class AttnDecoderRNN(nn.Module):
         # self.dropout = nn.Dropout(self.dropout_p)
         self.out = nn.Linear(self.bidirectional_size*self.hidden_size, self.output_size)  
 
-    def forward(self, input, hidden, encoder_outputs):
+    def forward(self, input, hidden, encoder_outputs, cell_state):
         embedded = self.embedding(input).view(1, 1, -1)
         # embedded = self.dropout(embedded)
         attn_weights = F.softmax(self.attn(torch.cat((embedded[0], hidden[0]), 1)), dim=1)
@@ -109,10 +109,17 @@ class AttnDecoderRNN(nn.Module):
         output = self.attn_combine(output).unsqueeze(0)
 
         output = F.relu(output)
-        output, hidden = self.cell(output, hidden)
-
-        output = F.log_softmax(self.out(output[0]), dim=1)
-        return output, hidden, attn_weights
+        if self.cell_type != 'LSTM':
+            output, hidden = self.cell(output, hidden)
+            output = F.log_softmax(self.out(output[0]), dim=1)
+            return output, hidden, attn_weights
+        else:
+            output, (hidden, cell_state) = self.cell(output, (hidden, cell_state))
+            output = F.log_softmax(self.out(output[0]), dim=1)
+            return output, hidden, attn_weights, cell_state
 
     def initHidden(self):
+        return torch.zeros(self.bidirectional_size*self.num_layers, 1, self.hidden_size, device=self.device)
+
+    def initCellState(self):
         return torch.zeros(self.bidirectional_size*self.num_layers, 1, self.hidden_size, device=self.device)
