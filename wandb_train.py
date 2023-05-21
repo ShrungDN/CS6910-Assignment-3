@@ -4,8 +4,11 @@ from sweep_configs import get_config
 import pickle 
 import os
 
+# This code is used to perform sweeps and generate output
+
 args = parse_arguments()
 
+# A sweep config is chosen and a wandb sweep ID is formed
 SC = args.sweep_config
 CONFIG = get_config(SC)
 
@@ -21,6 +24,7 @@ def wandb_train():
   
   run = wandb.init(entity=ENTITY, project=PROJECT, name=NAME)
   
+  # The hyperparameters are obtained form the sweep configuration
   config = {
         'CELL':wandb.config.cell,
         'EMBEDDING_SIZE':wandb.config.embedding_size,
@@ -41,6 +45,7 @@ def wandb_train():
   name = 'cell:{}_lr:{}_es:{}_hs:{}_att:{}'.format(config['CELL'], config['LR'], config['EMBEDDING_SIZE'], config['HIDDEN_SIZE'], config['ATTENTION'])
   run.name = name
 
+  # A model is trained using the hyper parameters and metrics are logged
   full_model, logs, _ = main(args.data_path, args.input_lang, args.output_lang, config, eval_test=False)
 
   for i in range(len(logs['iters'])):
@@ -52,7 +57,7 @@ def wandb_train():
         'val_loss': logs['val_loss'][i]
     })
   
-
+  # The model is saved for future use
   save_location = args.save_location
   filename = save_location + '{}_{}_{}/'.format(config['CELL'], config['ATTENTION'], logs['val_acc'][-1])
   os.makedirs(os.path.dirname(filename), exist_ok=True)

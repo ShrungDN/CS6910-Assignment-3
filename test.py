@@ -4,6 +4,8 @@ from helper_functions import *
 from train import *
 import pandas as pd
 
+# This code is used to read a model from a pickle file and then generate predictions on the test data
+
 args = parse_arguments()
 
 model_path = args.load_location

@@ -1,3 +1,5 @@
+# Different Sweep configurations used. It is a combination of bayes and random sweeps, with each successive sweep 
+# configuration containing better hyper parameter ranges than the previous
 SC1 = {
     'name': 'SC1',
     'method': 'bayes',
