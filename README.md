@@ -35,6 +35,15 @@ Python file that makes use of train.py to iteratively train multiple models usin
 
 Note: The sript to train a particular model is done through the train.py. The script used to tune hyperparameters (by generating sweeps) is done through the wandb_train.py file.
 
+**ME19B168-CS6910-Assignment-3-new.pdf**
+PDF of WandB report for the assignment 
+
+**predictions_attention.csv**
+Predictions obtained on the test data using an encoder decoder model with attention.
+
+**predictions_vanilla.csv**
+Predictions obtained on the test data using an encoder decoder model without attention.
+
 ## train.py Usage
 ```
 usage: python3 train.py [-h --help]
