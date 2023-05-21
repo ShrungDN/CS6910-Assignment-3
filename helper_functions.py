@@ -78,80 +78,6 @@ def tensorsFromPair(input_lang, output_lang, pair, device):
     target_tensor = tensorFromChar(output_lang, pair[1], device)
     return (input_tensor, target_tensor)
 
-def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, teacher_forcing_ratio, max_length, device):
-    encoder_hidden = encoder.initHidden()
-    encoder_cell_state = encoder.initCellState()
-
-    encoder_optimizer.zero_grad()
-    decoder_optimizer.zero_grad()
-
-    # ADD BATCH PROCESSING HERE AFTER FINISHING OTHER PARTS
-
-    input_length = input_tensor.size(0)
-    target_length = target_tensor.size(0)
-
-    encoder_outputs = torch.zeros(max_length, encoder.bidirectional_size*encoder.hidden_size, device=device)
-
-    loss = 0
-
-    for ei in range(input_length):
-        # print(ei, input_length, input_tensor[ei])
-        if encoder.cell_type != 'LSTM':
-            encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden, None)
-        else:
-            encoder_output, encoder_hidden, encoder_cell_state = encoder(input_tensor[ei], encoder_hidden, encoder_cell_state)
-
-        # print(input_tensor.data, input_length, ei, encoder_output.shape)
-        encoder_outputs[ei] = encoder_output[0, 0]
-
-    decoder_input = torch.tensor([[SOS_token]], device=device)
-
-    if decoder.cell_type != 'LSTM':
-        decoder_hidden = encoder_hidden
-    else:
-        decoder_hidden = encoder_hidden
-        decoder_cell_state = encoder_cell_state
-
-    use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
-
-    if use_teacher_forcing:
-        # Teacher forcing: Feed the target as the next input
-        for di in range(target_length):
-            # decoder_output, decoder_hidden, decoder_attention = decoder(
-            #     decoder_input, decoder_hidden, encoder_outputs)
-            if decoder.cell_type != 'LSTM':
-                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
-            else:
-                decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
-            loss += criterion(decoder_output, target_tensor[di])
-            decoder_input = target_tensor[di]  # Teacher forcing
-
-    else:
-        # Without teacher forcing: use its own predictions as the next input
-        for di in range(target_length):
-            # decoder_output, decoder_hidden, decoder_attention = decoder(
-            #     decoder_input, decoder_hidden, encoder_outputs)
-            if decoder.cell_type != 'LSTM':
-                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
-            else:
-                decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
-            topv, topi = decoder_output.topk(1)
-            decoder_input = topi.squeeze().detach()  # detach from history as input
-
-            loss += criterion(decoder_output, target_tensor[di])
-            if decoder_input.item() == EOS_token:
-                break
-
-    loss.backward()
-
-    # INSTEAD OF DOING LOSS BACKWARD HERE FOR EACH AND EVERY PAIR, GET A BUNCH OF PAIRS, CALC TOTAL LOSS AND DO LOSS BACKWARD. 
-    # DOING THIS WILL ENABLE BETTER OPTIMIZERS LIKE ADAM TO BE VIABLE
-
-    encoder_optimizer.step()
-    decoder_optimizer.step()
-
-    return loss.item() / target_length
-
 def asMinutes(s):
     m = math.floor(s / 60)
     s -= m * 60
@@ -198,7 +124,6 @@ def get_cell_type(cell):
     else:
         raise Exception('Incorrect Cell type')
 
-
 def trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device, print_every=1000):
     LR = config['LR']
     N_ITERS = config['N_ITERS']
@@ -223,14 +148,104 @@ def trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device,
         input_tensor = training_pair[0]
         target_tensor = training_pair[1]
 
-        loss = train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, TFR, MAX_LENGTH, device)
+        loss, acc = train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, TFR, MAX_LENGTH, device)
         print_loss_total += loss
+        print_acc_total += acc
 
         if iter % print_every == 0:
             print_loss_avg = print_loss_total / print_every
+            print_acc_avg = print_acc_total / print_every
             print_loss_total = 0
-            print('%s (%d %d%%) %.4f' % (timeSince(start, iter / N_ITERS), iter, iter / N_ITERS * 100, print_loss_avg))
+            print_acc_total = 0
+            print('%s (%d %d%%) Loss: %.4f Accuracy: %.04f' % (timeSince(start, iter / N_ITERS), iter, iter / N_ITERS * 100, print_loss_avg, print_acc_avg))
+    
+def evaluateRandomly(encoder, decoder, input_lang, output_lang, pairs, max_length, device, n=20):
+    for i in range(n):
+        pair = random.choice(pairs)
+        print('>', pair[0])
+        print('=', pair[1])
+        # output_words, attentions = evaluate(encoder, decoder, pair[0])
+        output_chars = evaluate(encoder, decoder, input_lang, output_lang, pair[0], max_length, device)
+        output_word = ''.join(output_chars)
+        print('<', output_word)
+        print('')
 
+def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, teacher_forcing_ratio, max_length, device):
+    encoder_hidden = encoder.initHidden()
+    encoder_cell_state = encoder.initCellState()
+
+    encoder_optimizer.zero_grad()
+    decoder_optimizer.zero_grad()
+
+    # ADD BATCH PROCESSING HERE AFTER FINISHING OTHER PARTS
+
+    input_length = input_tensor.size(0)
+    target_length = target_tensor.size(0)
+
+    encoder_outputs = torch.zeros(max_length, encoder.bidirectional_size*encoder.hidden_size, device=device)
+    loss = 0
+
+    for ei in range(input_length):
+        if encoder.cell_type != 'LSTM':
+            encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden, None)
+        else:
+            encoder_output, encoder_hidden, encoder_cell_state = encoder(input_tensor[ei], encoder_hidden, encoder_cell_state)
+        encoder_outputs[ei] = encoder_output[0, 0]
+
+    decoder_input = torch.tensor([[SOS_token]], device=device)
+    decoded_chars = []
+
+    if decoder.cell_type != 'LSTM':
+        decoder_hidden = encoder_hidden
+    else:
+        decoder_hidden = encoder_hidden
+        decoder_cell_state = encoder_cell_state
+
+    use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
+
+    if use_teacher_forcing:
+        # Teacher forcing: Feed the target as the next input
+        for di in range(target_length):
+            # decoder_output, decoder_hidden, decoder_attention = decoder(
+            #     decoder_input, decoder_hidden, encoder_outputs)
+            if decoder.cell_type != 'LSTM':
+                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
+            else:
+                decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
+            topv, topi = decoder_output.topk(1)
+            decoded_char = topi.squeeze().detach()  # detach from history as input
+            decoded_chars.append(decoded_char.item())
+            loss += criterion(decoder_output, target_tensor[di])
+            decoder_input = target_tensor[di]  # Teacher forcing
+
+    else:
+        # Without teacher forcing: use its own predictions as the next input
+        for di in range(target_length):
+            # decoder_output, decoder_hidden, decoder_attention = decoder(
+            #     decoder_input, decoder_hidden, encoder_outputs)
+            if decoder.cell_type != 'LSTM':
+                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
+            else:
+                decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
+            topv, topi = decoder_output.topk(1)
+            decoder_input = topi.squeeze().detach()  # detach from history as input
+            decoded_chars.append(decoder_input.item())
+            loss += criterion(decoder_output, target_tensor[di])
+            if decoder_input.item() == EOS_token:
+                break
+
+    input_chars = [c.detach().item() for c in input_tensor]
+    
+    acc = float(input_chars == decoded_chars)
+    loss.backward()
+
+    # INSTEAD OF DOING LOSS BACKWARD HERE FOR EACH AND EVERY PAIR, GET A BUNCH OF PAIRS, CALC TOTAL LOSS AND DO LOSS BACKWARD. 
+    # DOING THIS WILL ENABLE BETTER OPTIMIZERS LIKE ADAM TO BE VIABLE
+
+    encoder_optimizer.step()
+    decoder_optimizer.step()
+
+    return loss.item() / target_length, acc
 
 def evaluate(encoder, decoder, input_lang, output_lang, word, max_length, device):
     # CHANGE DECODED WORDS TO DECODER CHARS AND SO ON
@@ -276,14 +291,3 @@ def evaluate(encoder, decoder, input_lang, output_lang, word, max_length, device
 
         # return decoded_words, decoder_attentions[:di + 1]
         return decoded_words
-    
-def evaluateRandomly(encoder, decoder, input_lang, output_lang, pairs, max_length, device, n=20):
-    for i in range(n):
-        pair = random.choice(pairs)
-        print('>', pair[0])
-        print('=', pair[1])
-        # output_words, attentions = evaluate(encoder, decoder, pair[0])
-        output_chars = evaluate(encoder, decoder, input_lang, output_lang, pair[0], max_length, device)
-        output_word = ''.join(output_chars)
-        print('<', output_word)
-        print('')

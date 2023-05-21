@@ -15,7 +15,7 @@ def parse_arguments():
     parser.add_argument('-es', '--embedding_size', type=int, default=128, help='Embedding Size')
     parser.add_argument('-nl', '--num_layers', type=int, default=2, help='Number of Encoder-Decoder Layers')
     parser.add_argument('-hs', '--hidden_size', type=int, default=256, help='Hidden Layer Size')
-    parser.add_argument('-c', '--cell', type=str, default='LSTM', help='Cell type: "RNN", "GRU" or "LSTM"')
+    parser.add_argument('-c', '--cell', type=str, default='RNN', help='Cell type: "RNN", "GRU" or "LSTM"')
     parser.add_argument('-bi', '--bidirectional', type=str, default='True', help='Biderictional Cell: "True" or "False')
     parser.add_argument('-dr', '--dropout', type=float, default=0.2, help='Dropout parameter between 0 and 1')
     parser.add_argument('-tfr', '--teacher_forcing', type=float, default=0.5, help='Teacher forcing ratio to be used')
