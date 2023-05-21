@@ -39,7 +39,7 @@ def wandb_train():
   name = 'cell:{}_lr:{}_es:{}_hs:{}_att:{}'.format(config['CELL'], config['LR'], config['EMBEDDING_SIZE'], config['HIDDEN_SIZE'], config['ATTENTION'])
   run.name = name
 
-  logs, _ = main(args.data_path, args.input_lang, args.output_lang, config, eval_test=False)
+  logs, _ = main(args.data_path, args.input_lang, args.output_lang, args.save_location, config, eval_test=False)
 
   for i in range(len(logs['iters'])):
     wandb.log({

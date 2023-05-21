@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pickle
 import os
 
-def main(data_path, inp_lang_name, out_lang_name, config, eval_test=False):
+def main(data_path, inp_lang_name, out_lang_name, config, save_location, eval_test=False):
     CELL = config['CELL']
     EMBEDDING_SIZE = config['EMBEDDING_SIZE']
     NUM_LAYERS = config['NUM_LAYERS']
@@ -28,7 +28,7 @@ def main(data_path, inp_lang_name, out_lang_name, config, eval_test=False):
 
     predictRandomly(encoder, decoder, input_lang, output_lang, valid_pairs, config['MAX_LENGTH'], device, 20)
 
-    filename = args.save_location + '{}_{}_{}/'.format(config['CELL'], config['ATTENTION'], metrics['val_acc'][-1])
+    filename = save_location + '{}_{}_{}/'.format(config['CELL'], config['ATTENTION'], metrics['val_acc'][-1])
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename+'encoder', 'wb') as file:
         pickle.dump(encoder, file)
@@ -74,7 +74,6 @@ if __name__ == '__main__':
         'LOSS':args.loss,
         'LF':args.log_frequency,
         'ATTENTION':args.attention,
-        'SAVE_LOCATION':args.save_location
     }
 
     metrics, test_metrics = main(args.data_path, args.input_lang, args.output_lang, config, eval_test=True)
