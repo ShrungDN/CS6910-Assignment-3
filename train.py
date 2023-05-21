@@ -13,7 +13,7 @@ def main(data_path, inp_lang_name, out_lang_name, config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print('Device: ', device)
 
-    input_lang, output_lang, pairs = prepareData(data_path, inp_lang_name, out_lang_name, config['MAX_LENGTH'])
+    input_lang, output_lang, train_pairs, valid_pairs, test_pairs = prepareData(data_path, inp_lang_name, out_lang_name, config['MAX_LENGTH'])
 
     hidden_size = 256
     encoder = EncoderRNN(CELL, input_lang.n_chars, EMBEDDING_SIZE, HIDDEN_SIZE, NUM_LAYERS, BIDIRECTIONAL, DROPOUT, device).to(device)
@@ -22,10 +22,11 @@ def main(data_path, inp_lang_name, out_lang_name, config):
 
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
     # return loss acc etc here
-    trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device, print_every=100)
+    trainIters(encoder, decoder, input_lang, output_lang, train_pairs, config, device, print_every=100)
+    validIters(encoder, decoder, input_lang, output_lang, valid_pairs, config['LOSS'], config['MAX_LENGTH'], device)
 
     # return other stuff here
-    evaluateRandomly(encoder, decoder, input_lang, output_lang, pairs, config['MAX_LENGTH'], device, 20)
+    predictRandomly(encoder, decoder, input_lang, output_lang, valid_pairs, config['MAX_LENGTH'], device, 20)
 
 if __name__ == '__main__':
     args = parse_arguments()

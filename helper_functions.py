@@ -44,26 +44,30 @@ def readLangs(data_path, lang1='eng', lang2='kan'):
     valid_df = pd.read_csv(valid_path, header=None)
     test_df = pd.read_csv(test_path, header=None)
 
-    pairs = [(train_df.iloc[i,0], train_df.iloc[i,1]) for i in range(len(train_df))]
+    train_pairs = [(train_df.iloc[i,0], train_df.iloc[i,1]) for i in range(len(train_df))]
+    valid_pairs = [(valid_df.iloc[i,0], valid_df.iloc[i,1]) for i in range(len(valid_df))]
+    test_pairs = [(test_df.iloc[i,0], test_df.iloc[i,1]) for i in range(len(test_df))]
     input_lang = Language(lang1)
     output_lang = Language(lang2)
-    return input_lang, output_lang, pairs
+    return input_lang, output_lang, train_pairs, valid_pairs, test_pairs
 
 def filterPairs(pairs, MAX_LENGTH):
     return [p for p in pairs if (len(p[0]) <= MAX_LENGTH and len(p[1]) <= MAX_LENGTH)]
 
 def prepareData(data_path, lang1, lang2, MAX_LENGTH):
-    input_lang, output_lang, pairs = readLangs(data_path, lang1, lang2)
-    print("Read %s word pairs" % len(pairs))
-    pairs = filterPairs(pairs, MAX_LENGTH)
+    input_lang, output_lang, train_pairs, valid_pairs, test_pairs = readLangs(data_path, lang1, lang2)
+    print("Read %s word pairs" % len(train_pairs))
+    train_pairs = filterPairs(train_pairs, MAX_LENGTH)
+    valid_pairs = filterPairs(valid_pairs, MAX_LENGTH)
+    test_pairs = filterPairs(test_pairs, MAX_LENGTH)
     print("Counting chars...")
-    for pair in pairs:
+    for pair in train_pairs:
         input_lang.addWord(pair[0])
         output_lang.addWord(pair[1])
     print("Counted chars:")
     print(input_lang.name, input_lang.n_chars)
     print(output_lang.name, output_lang.n_chars)
-    return input_lang, output_lang, pairs
+    return input_lang, output_lang, train_pairs, valid_pairs, test_pairs
 
 def indexesFromChar(lang, word):
     return [lang.char2index[char] for char in word]
@@ -159,18 +163,20 @@ def trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device,
             print_acc_total = 0
             print('%s (%d %d%%) Loss: %.4f Accuracy: %.04f' % (timeSince(start, iter / N_ITERS), iter, iter / N_ITERS * 100, print_loss_avg, print_acc_avg))
     
-def evaluateRandomly(encoder, decoder, input_lang, output_lang, pairs, max_length, device, n=20):
+def predictRandomly(encoder, decoder, input_lang, output_lang, pairs, max_length, device, n=20):
     for i in range(n):
         pair = random.choice(pairs)
         print('>', pair[0])
         print('=', pair[1])
         # output_words, attentions = evaluate(encoder, decoder, pair[0])
-        output_chars = evaluate(encoder, decoder, input_lang, output_lang, pair[0], max_length, device)
+        output_chars = predict(encoder, decoder, input_lang, output_lang, pair[0], max_length, device)
         output_word = ''.join(output_chars)
         print('<', output_word)
         print('')
 
 def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, teacher_forcing_ratio, max_length, device):
+    encoder.train()
+    decoder.train()
     encoder_hidden = encoder.initHidden()
     encoder_cell_state = encoder.initCellState()
 
@@ -247,8 +253,87 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
 
     return loss.item() / target_length, acc
 
-def evaluate(encoder, decoder, input_lang, output_lang, word, max_length, device):
+def validIters(encoder, decoder, input_lang, output_lang, pairs, criterion, max_length, device):
+    encoder.eval()
+    decoder.eval()
+    criterion = get_loss_func(criterion)
+    criterion = criterion()
+    with torch.no_grad():
+        print_loss_total = 0
+        print_acc_total = 0
+
+        N_ITERS = len(pairs)
+        print(N_ITERS)
+        training_pairs = [tensorsFromPair(input_lang, output_lang, pairs[i], device) for i in range(len(pairs))]
+
+        for iter in range(1, N_ITERS + 1):
+            training_pair = training_pairs[iter - 1]
+            input_tensor = training_pair[0]
+            target_tensor = training_pair[1]
+
+            loss, acc = valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, device)
+            print_loss_total += loss
+            print_acc_total += acc
+
+        loss = print_loss_total / N_ITERS
+        acc = print_acc_total / N_ITERS
+        print('Loss: %.4f Accuracy: %.04f' % (loss, acc))
+        return loss, acc
+
+def valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, device):
+    encoder.eval()
+    decoder.eval()
+
+    with torch.no_grad():
+        encoder_hidden = encoder.initHidden()
+        encoder_cell_state = encoder.initCellState()
+
+        input_length = input_tensor.size(0)
+        target_length = target_tensor.size(0)
+
+        encoder_outputs = torch.zeros(max_length, encoder.bidirectional_size*encoder.hidden_size, device=device)
+        loss = 0
+
+        for ei in range(input_length):
+            if encoder.cell_type != 'LSTM':
+                encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden, None)
+            else:
+                encoder_output, encoder_hidden, encoder_cell_state = encoder(input_tensor[ei], encoder_hidden, encoder_cell_state)
+            encoder_outputs[ei] = encoder_output[0, 0]
+
+        decoder_input = torch.tensor([[SOS_token]], device=device)
+        decoded_chars = []
+
+        if decoder.cell_type != 'LSTM':
+            decoder_hidden = encoder_hidden
+        else:
+            decoder_hidden = encoder_hidden
+            decoder_cell_state = encoder_cell_state
+
+        for di in range(target_length):
+            # decoder_output, decoder_hidden, decoder_attention = decoder(
+            #     decoder_input, decoder_hidden, encoder_outputs)
+            if decoder.cell_type != 'LSTM':
+                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
+            else:
+                decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
+            topv, topi = decoder_output.topk(1)
+            decoder_input = topi.squeeze().detach()  # detach from history as input
+            decoded_chars.append(decoder_input.item())
+            loss += criterion(decoder_output, target_tensor[di])
+            if decoder_input.item() == EOS_token:
+                break
+
+        input_chars = [c.detach().item() for c in input_tensor]
+        acc = float(input_chars == decoded_chars)
+
+        return loss.item() / target_length, acc
+
+
+def predict(encoder, decoder, input_lang, output_lang, word, max_length, device):
     # CHANGE DECODED WORDS TO DECODER CHARS AND SO ON
+    encoder.eval()
+    decoder.eval()
     with torch.no_grad():
         input_tensor = tensorFromChar(input_lang, word, device)
         input_length = input_tensor.size()[0]
