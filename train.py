@@ -15,10 +15,12 @@ def main(data_path, inp_lang_name, out_lang_name, config):
 
     input_lang, output_lang, train_pairs, valid_pairs, test_pairs = prepareData(data_path, inp_lang_name, out_lang_name, config['MAX_LENGTH'])
 
-    hidden_size = 256
     encoder = EncoderRNN(CELL, input_lang.n_chars, EMBEDDING_SIZE, HIDDEN_SIZE, NUM_LAYERS, BIDIRECTIONAL, DROPOUT, device).to(device)
     # attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_chars, dropout_p=0.1).to(device)
-    decoder = DecoderRNN(CELL, output_lang.n_chars, EMBEDDING_SIZE, hidden_size, NUM_LAYERS, BIDIRECTIONAL, DROPOUT, device).to(device)
+    if config['ATTENTION'] == 'False':
+        decoder = DecoderRNN(CELL, output_lang.n_chars, EMBEDDING_SIZE, HIDDEN_SIZE, NUM_LAYERS, BIDIRECTIONAL, DROPOUT, device).to(device)
+    elif config['ATTENTION'] == 'True':
+        decoder = AttnDecoderRNN(CELL, output_lang.n_chars, EMBEDDING_SIZE, HIDDEN_SIZE, NUM_LAYERS, BIDIRECTIONAL, DROPOUT, device).to(device)
 
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
     # return loss acc etc here
@@ -49,7 +51,7 @@ if __name__ == '__main__':
         'OPTIM':args.optimizer,
         'LOSS':args.loss,
         'LF':args.log_frequency,
-        # '':,
+        'ATTENTION':args.attention,
         # '':,
     }
 

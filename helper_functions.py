@@ -145,7 +145,7 @@ def train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid
 
     encoder_optimizer = OPT(encoder.parameters(), lr=LR)
     decoder_optimizer = OPT(decoder.parameters(), lr=LR)
-    training_pairs = [tensorsFromPair(input_lang, output_lang, random.choice(train_pairs), device) for i in range(N_ITERS)]
+    training_pairs = [tensorsFromPair(input_lang, output_lang, random.choice(train_pairs), device) for i in range(N_ITERS+1)]
     criterion = LOSS_FUNC()
 
     metrics = {
@@ -156,7 +156,7 @@ def train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid
         'val_acc':[]
     }
 
-    for iter in range(1, N_ITERS + 1):
+    for iter in range(1, N_ITERS + 2):
         training_pair = training_pairs[iter - 1]
         input_tensor = training_pair[0]
         target_tensor = training_pair[1]
@@ -165,7 +165,7 @@ def train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid
         print_loss_total += loss
         print_acc_total += acc
 
-        if iter % print_every == 0:
+        if iter % print_every == 1:
             print_loss_avg = print_loss_total / print_every
             print_acc_avg = print_acc_total / print_every
             print_loss_total = 0
@@ -234,7 +234,10 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
             # decoder_output, decoder_hidden, decoder_attention = decoder(
             #     decoder_input, decoder_hidden, encoder_outputs)
             if decoder.cell_type != 'LSTM':
-                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
+                if decoder.attention:
+                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
+                else:
+                    decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
                 decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.topk(1)
@@ -249,7 +252,10 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
             # decoder_output, decoder_hidden, decoder_attention = decoder(
             #     decoder_input, decoder_hidden, encoder_outputs)
             if decoder.cell_type != 'LSTM':
-                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
+                if decoder.attention:
+                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
+                else:
+                    decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
                 decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.topk(1)
@@ -332,7 +338,10 @@ def valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, 
             # decoder_output, decoder_hidden, decoder_attention = decoder(
             #     decoder_input, decoder_hidden, encoder_outputs)
             if decoder.cell_type != 'LSTM':
-                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
+                if decoder.attention:
+                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
+                else:
+                    decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
                 decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.topk(1)
@@ -379,7 +388,10 @@ def predict(encoder, decoder, input_lang, output_lang, word, max_length, device)
             #     decoder_input, decoder_hidden, encoder_outputs)
             # decoder_attentions[di] = decoder_attention.data
             if decoder.cell_type != 'LSTM':
-                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
+                if decoder.attention:
+                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
+                else:
+                    decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
                 decoder_output, decoder_hidden, decoder_cell_state = decoder(decoder_input, decoder_hidden, decoder_cell_state)
             topv, topi = decoder_output.data.topk(1)
