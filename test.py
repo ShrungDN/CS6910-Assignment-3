@@ -33,4 +33,4 @@ print('Test Accuracy:', test_acc)
 predictRandomly(encoder, decoder, input_lang, output_lang, test_pairs, config_max_length, device, 30)
 if test_attentions is not None:
     with open(args.load_location + 'attentions', 'wb') as file:
-      pickle.dump(test_attentions, file)
+      pickle.dump(test_attentions.numpy(), file)
