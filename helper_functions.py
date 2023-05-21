@@ -172,13 +172,14 @@ def train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid
             print_acc_total = 0
             print('Validating...')
             val_loss, val_acc = validIters(encoder, decoder, input_lang, output_lang, valid_pairs, config['LOSS'], MAX_LENGTH, device)
-            print('%s (%d %d%%) Training: Loss = %.4f Accuracy = %.04f Validation: Loss = %.4f Accuracy = %.04f' % (timeSince(start, iter / N_ITERS), iter, iter / N_ITERS * 100, print_loss_avg, print_acc_avg, val_loss, val_acc))
             print('Logging...')
+            print('%s (%d %d%%) Training: Loss = %.4f Accuracy = %.04f Validation: Loss = %.4f Accuracy = %.04f' % (timeSince(start, iter / N_ITERS), iter, iter / N_ITERS * 100, print_loss_avg, print_acc_avg, val_loss, val_acc))
             metrics['iters'].append(iter)
             metrics['train_loss'].append(print_loss_avg)
             metrics['train_acc'].append(print_acc_avg)
             metrics['val_loss'].append(val_loss)
             metrics['val_acc'].append(val_acc)
+            print('Training...')
     return metrics
 
 def predictRandomly(encoder, decoder, input_lang, output_lang, pairs, max_length, device, n=20):
@@ -258,9 +259,10 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
             if decoder_input.item() == EOS_token:
                 break
 
-    input_chars = [c.detach().item() for c in input_tensor]
+    target_chars = [c.detach().item() for c in target_tensor]
     
-    acc = float(input_chars == decoded_chars)
+    acc = float(target_chars == decoded_chars)
+    print(target_chars, decoded_chars)
     loss.backward()
 
     # INSTEAD OF DOING LOSS BACKWARD HERE FOR EACH AND EVERY PAIR, GET A BUNCH OF PAIRS, CALC TOTAL LOSS AND DO LOSS BACKWARD. 
