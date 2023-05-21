@@ -26,6 +26,7 @@ Python file with various sweep configurations for hyperparameter tuning using th
 
 **test.py**
 Python file with the code to import a model from a pickle file and then generate predictions and metrics on the test set
+Link to saved best models: https://drive.google.com/drive/folders/18OZoHz3RVa1NRXjJrVVJoM9etb5Ck-_g?usp=sharing
 
 **train.py**:
 Python file that is used to train a single model. The hyperparameters used to train this model can be passed as arguments as shown later in this documentation.
