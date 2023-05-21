@@ -154,7 +154,7 @@ SCtemp = {
         'teacher_forcing': {'values': [0.5]},
         'max_length': {'values': [30]},
         'learning_rate': {'values': [0.01, 0.02]},
-        'epochs': {'values': [1]},
+        'epochs': {'values': [10000]},
         'optimizer': {'values': ['SGD']},
         'loss': {'values': ['NLLLoss']},
         'attention': {'values': ['True']},
