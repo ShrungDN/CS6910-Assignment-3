@@ -36,20 +36,14 @@ def wandb_train():
         'ATTENTION':wandb.config.attention,
     }
 
-  # name = '{}__bs:{}_da:{}_lr:{}_e:{}_dr:{}_act:{}_nfc:{}_bn:{}_nf:{},{},{},{},{}_sf:{},{},{},{},{}'.format(args.sweep_config,
-  #   config['BATCH_SIZE'], config['DATA_AUG'], config['LR'], config['EPOCHS'], config['DROPOUT'], config['ACTIVATION'],
-  #   config['NFC'], config['BN'], config['NUM_FILTERS'][0], config['NUM_FILTERS'][1], config['NUM_FILTERS'][2],
-  #   config['NUM_FILTERS'][3], config['NUM_FILTERS'][4], config['SIZE_FILTERS'][0], 
-  #   config['SIZE_FILTERS'][1], config['SIZE_FILTERS'][2], config['SIZE_FILTERS'][3], config['SIZE_FILTERS'][4]
-  # )
-
-  # run.name = name
+  name = 'cell:{}_lr:{}_es:{}_hs:{}_att:{}'.format(config['CELL'], config['LR'], config['EMBEDDING_SIZE'], config['HIDDEN_SIZE'], config['ATTENTION'])
+  run.name = name
 
   logs, _ = main(args.data_path, args.input_lang, args.output_lang, config, eval_test=False)
 
-  for i in range(len(logs['epochs'])):
+  for i in range(len(logs['iters'])):
     wandb.log({
-        'epochs': logs['epochs'][i],
+        'epochs': logs['iters'][i],
         'train_acc': logs['train_acc'][i],
         'train_loss': logs['train_loss'][i], 
         'val_acc': logs['val_acc'][i], 
