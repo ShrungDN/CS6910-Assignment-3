@@ -17,7 +17,7 @@ SC1 = {
         'epochs': {'values': [50000]},
         'optimizer': {'values': ['SGD']},
         'loss': {'values': ['NLLLoss']},
-        'attention': {'values': ['True', 'False']},
+        'attention': {'values': ['False']},
     }
 }
 

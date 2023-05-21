@@ -158,6 +158,9 @@ def train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid
     }
 
     for iter in range(1, N_ITERS + 1):
+        if iter % 1000 == 0:
+            print(iter)
+
         training_pair = training_pairs[iter - 1]
         input_tensor = training_pair[0]
         target_tensor = training_pair[1]
