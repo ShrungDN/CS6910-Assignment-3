@@ -22,11 +22,15 @@ def main(data_path, inp_lang_name, out_lang_name, config):
 
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
     # return loss acc etc here
-    trainIters(encoder, decoder, input_lang, output_lang, train_pairs, config, device, print_every=100)
-    validIters(encoder, decoder, input_lang, output_lang, valid_pairs, config['LOSS'], config['MAX_LENGTH'], device)
+    metrics = train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid_pairs, config, device, print_every=1000)
+
+    
+    # validIters(encoder, decoder, input_lang, output_lang, valid_pairs, config['LOSS'], config['MAX_LENGTH'], device)
 
     # return other stuff here
     predictRandomly(encoder, decoder, input_lang, output_lang, valid_pairs, config['MAX_LENGTH'], device, 20)
+
+    return metrics
 
 if __name__ == '__main__':
     args = parse_arguments()
@@ -49,4 +53,5 @@ if __name__ == '__main__':
         # '':,
     }
 
-    _ = main(args.data_path, args.input_lang, args.output_lang, config)
+    metrics = main(args.data_path, args.input_lang, args.output_lang, config)
+    print(metrics)

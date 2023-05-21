@@ -128,7 +128,7 @@ def get_cell_type(cell):
     else:
         raise Exception('Incorrect Cell type')
 
-def trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device, print_every=1000):
+def train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid_pairs, config, device, print_every=1000):
     LR = config['LR']
     N_ITERS = config['N_ITERS']
     OPT = get_optimizer(config['OPTIM'])
@@ -144,8 +144,16 @@ def trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device,
 
     encoder_optimizer = OPT(encoder.parameters(), lr=LR)
     decoder_optimizer = OPT(decoder.parameters(), lr=LR)
-    training_pairs = [tensorsFromPair(input_lang, output_lang, random.choice(pairs), device) for i in range(N_ITERS)]
+    training_pairs = [tensorsFromPair(input_lang, output_lang, random.choice(train_pairs), device) for i in range(N_ITERS)]
     criterion = LOSS_FUNC()
+
+    metrics = {
+        'iters':[],
+        'train_loss':[],
+        'train_acc':[],
+        'val_loss':[],
+        'val_acc':[]
+    }
 
     for iter in range(1, N_ITERS + 1):
         training_pair = training_pairs[iter - 1]
@@ -161,8 +169,15 @@ def trainIters(encoder, decoder, input_lang, output_lang, pairs, config, device,
             print_acc_avg = print_acc_total / print_every
             print_loss_total = 0
             print_acc_total = 0
-            print('%s (%d %d%%) Loss: %.4f Accuracy: %.04f' % (timeSince(start, iter / N_ITERS), iter, iter / N_ITERS * 100, print_loss_avg, print_acc_avg))
-    
+            val_loss, val_acc = validIters(encoder, decoder, input_lang, output_lang, valid_pairs, config['LOSS'], MAX_LENGTH, device)
+            print('%s (%d %d%%) Training: Loss = %.4f Accuracy = %.04f Validation: Loss = %.4f Accuracy = %.04f' % (timeSince(start, iter / N_ITERS), iter, iter / N_ITERS * 100, print_loss_avg, print_acc_avg, val_loss, val_acc))
+            metrics['iters'].append(iter)
+            metrics['train_loss'].append(print_loss_avg)
+            metrics['train_acc'].append(print_acc_avg)
+            metrics['val_loss'].append(val_loss)
+            metrics['val_acc'].append(val_acc)
+    return metrics
+
 def predictRandomly(encoder, decoder, input_lang, output_lang, pairs, max_length, device, n=20):
     for i in range(n):
         pair = random.choice(pairs)
@@ -263,7 +278,6 @@ def validIters(encoder, decoder, input_lang, output_lang, pairs, criterion, max_
         print_acc_total = 0
 
         N_ITERS = len(pairs)
-        print(N_ITERS)
         training_pairs = [tensorsFromPair(input_lang, output_lang, pairs[i], device) for i in range(len(pairs))]
 
         for iter in range(1, N_ITERS + 1):
@@ -277,7 +291,6 @@ def validIters(encoder, decoder, input_lang, output_lang, pairs, criterion, max_
 
         loss = print_loss_total / N_ITERS
         acc = print_acc_total / N_ITERS
-        print('Loss: %.4f Accuracy: %.04f' % (loss, acc))
         return loss, acc
 
 def valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, device):
