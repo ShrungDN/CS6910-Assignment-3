@@ -79,7 +79,7 @@ if __name__ == '__main__':
     print(metrics, test_metrics)
 
     save_location = args.save_location
-    filename = save_location + '{}_{}_{}/'.format(config['CELL'], config['ATTENTION'], metrics['val_acc'][-1])
+    filename = save_location + '/{}_{}_{}/'.format(config['CELL'], config['ATTENTION'], metrics['val_acc'][-1])
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename+'encoder', 'wb') as file:
         pickle.dump(full_model['encoder'], file)

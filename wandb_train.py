@@ -59,7 +59,7 @@ def wandb_train():
   
   # The model is saved for future use
   save_location = args.save_location
-  filename = save_location + '{}_{}_{}/'.format(config['CELL'], config['ATTENTION'], logs['val_acc'][-1])
+  filename = save_location + '/{}_{}_{}/'.format(config['CELL'], config['ATTENTION'], logs['val_acc'][-1])
   os.makedirs(os.path.dirname(filename), exist_ok=True)
   with open(filename+'encoder', 'wb') as file:
       pickle.dump(full_model['encoder'], file)
