@@ -1,8 +1,9 @@
 from helper_functions import *
 from models import *
 from parse_args import parse_arguments
+import matplotlib.pyplot as plt
 
-def main(data_path, inp_lang_name, out_lang_name, config):
+def main(data_path, inp_lang_name, out_lang_name, config, eval_test=False):
     CELL = config['CELL']
     EMBEDDING_SIZE = config['EMBEDDING_SIZE']
     NUM_LAYERS = config['NUM_LAYERS']
@@ -16,24 +17,26 @@ def main(data_path, inp_lang_name, out_lang_name, config):
     input_lang, output_lang, train_pairs, valid_pairs, test_pairs = prepareData(data_path, inp_lang_name, out_lang_name, config['MAX_LENGTH'])
 
     encoder = EncoderRNN(CELL, input_lang.n_chars, EMBEDDING_SIZE, HIDDEN_SIZE, NUM_LAYERS, BIDIRECTIONAL, DROPOUT, device).to(device)
-    # attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_chars, dropout_p=0.1).to(device)
     if config['ATTENTION'] == 'False':
         decoder = DecoderRNN(CELL, output_lang.n_chars, EMBEDDING_SIZE, HIDDEN_SIZE, NUM_LAYERS, BIDIRECTIONAL, DROPOUT, device).to(device)
     elif config['ATTENTION'] == 'True':
         decoder = AttnDecoderRNN(CELL, output_lang.n_chars, EMBEDDING_SIZE, HIDDEN_SIZE, NUM_LAYERS, BIDIRECTIONAL, DROPOUT, device).to(device)
 
-    # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
-    # return loss acc etc here
     metrics = train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid_pairs, config, device, print_every=config['LF'])
 
-    
-    # validIters(encoder, decoder, input_lang, output_lang, valid_pairs, config['LOSS'], config['MAX_LENGTH'], device)
-
-    # return other stuff here
     predictRandomly(encoder, decoder, input_lang, output_lang, valid_pairs, config['MAX_LENGTH'], device, 20)
 
-    return metrics
-
+    if not eval_test:
+        return metrics, None
+    else:
+        test_loss, test_acc, test_attentions = validIters(encoder, decoder, input_lang, output_lang, test_pairs, config['LOSS'], config['MAX_LENGTH'], device)
+        test_metrics = {
+            'test_loss': test_loss,
+            'test_acc': test_acc,
+            'test_attentions': test_attentions
+        }
+        return metrics, test_metrics
+    
 if __name__ == '__main__':
     args = parse_arguments()
 
@@ -55,5 +58,7 @@ if __name__ == '__main__':
         # '':,
     }
 
-    metrics = main(args.data_path, args.input_lang, args.output_lang, config)
-    print(metrics)
+    metrics, test_metrics = main(args.data_path, args.input_lang, args.output_lang, config, eval_test=True)
+    if test_metrics is not None:
+        plt.matshow(test_metrics['test_attentions'])
+        plt.show()

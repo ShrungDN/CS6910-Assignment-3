@@ -47,6 +47,12 @@ def readLangs(data_path, lang1='eng', lang2='kan'):
     train_pairs = [(train_df.iloc[i,0], train_df.iloc[i,1]) for i in range(len(train_df))]
     valid_pairs = [(valid_df.iloc[i,0], valid_df.iloc[i,1]) for i in range(len(valid_df))]
     test_pairs = [(test_df.iloc[i,0], test_df.iloc[i,1]) for i in range(len(test_df))]
+
+
+    valid_pairs = valid_pairs[:20]
+    test_pairs = test_pairs[:20]
+
+
     input_lang = Language(lang1)
     output_lang = Language(lang2)
     return input_lang, output_lang, train_pairs, valid_pairs, test_pairs
@@ -145,7 +151,7 @@ def train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid
 
     encoder_optimizer = OPT(encoder.parameters(), lr=LR)
     decoder_optimizer = OPT(decoder.parameters(), lr=LR)
-    training_pairs = [tensorsFromPair(input_lang, output_lang, random.choice(train_pairs), device) for i in range(N_ITERS+1)]
+    training_pairs = [tensorsFromPair(input_lang, output_lang, random.choice(train_pairs), device) for i in range(N_ITERS)]
     criterion = LOSS_FUNC()
 
     metrics = {
@@ -156,7 +162,7 @@ def train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid
         'val_acc':[]
     }
 
-    for iter in range(1, N_ITERS + 2):
+    for iter in range(1, N_ITERS + 1):
         training_pair = training_pairs[iter - 1]
         input_tensor = training_pair[0]
         target_tensor = training_pair[1]
@@ -165,13 +171,13 @@ def train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid
         print_loss_total += loss
         print_acc_total += acc
 
-        if iter % print_every == 1:
+        if iter % print_every == 0:
             print_loss_avg = print_loss_total / print_every
             print_acc_avg = print_acc_total / print_every
             print_loss_total = 0
             print_acc_total = 0
             print('Validating...')
-            val_loss, val_acc = validIters(encoder, decoder, input_lang, output_lang, valid_pairs, config['LOSS'], MAX_LENGTH, device)
+            val_loss, val_acc, _ = validIters(encoder, decoder, input_lang, output_lang, valid_pairs, config['LOSS'], MAX_LENGTH, device)
             print('Logging...')
             print('%s (%d %d%%) Training: Loss = %.4f Accuracy = %.04f Validation: Loss = %.4f Accuracy = %.04f' % (timeSince(start, iter / N_ITERS), iter, iter / N_ITERS * 100, print_loss_avg, print_acc_avg, val_loss, val_acc))
             metrics['iters'].append(iter)
@@ -296,13 +302,19 @@ def validIters(encoder, decoder, input_lang, output_lang, pairs, criterion, max_
             input_tensor = training_pair[0]
             target_tensor = training_pair[1]
 
-            loss, acc = valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, device)
+            if decoder.attention:
+                loss, acc, attentions = valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, device)
+            else:
+                loss, acc, _ = valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, device)
             print_loss_total += loss
             print_acc_total += acc
 
         loss = print_loss_total / N_ITERS
         acc = print_acc_total / N_ITERS
-        return loss, acc
+        if decoder.attention:
+            return loss, acc, attentions
+        else:
+            return loss, acc, None
 
 def valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, device):
     encoder.eval()
@@ -327,6 +339,7 @@ def valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, 
 
         decoder_input = torch.tensor([[SOS_token]], device=device)
         decoded_chars = []
+        decoder_attentions = torch.zeros(max_length, max_length)
 
         if decoder.cell_type != 'LSTM':
             decoder_hidden = encoder_hidden
@@ -340,6 +353,7 @@ def valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, 
             if decoder.cell_type != 'LSTM':
                 if decoder.attention:
                     decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
+                    decoder_attentions[di] = decoder_attention.data
                 else:
                     decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, None)
             else:
@@ -354,7 +368,10 @@ def valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, 
         target_chars = [c.detach().item() for c in target_tensor]
         acc = float(target_chars == decoded_chars)
 
-        return loss.item() / target_length, acc
+        if decoder.attention:
+            return loss.item() / target_length, acc, decoder_attentions[:di + 1]
+        else:
+            return loss.item() / target_length, acc, None
 
 def predict(encoder, decoder, input_lang, output_lang, word, max_length, device):
     # CHANGE DECODED WORDS TO DECODER CHARS AND SO ON

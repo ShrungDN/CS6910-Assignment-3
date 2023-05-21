@@ -24,7 +24,7 @@ def parse_arguments():
     parser.add_argument('-e', '--epochs', type=int, default=60000, help='Number of epochs to train for')
     parser.add_argument('-opt', '--optimizer', type=str, default='SGD', help='Optimizer used for training: "Adam", "Adadelta". "Adagrad", "NAdam", "RMSprop" or "SGD"')
     parser.add_argument('-l', '--loss', type=str, default='NLLLoss', help='Loss function used for training: "CrossEntropyLoss", or "NLLLoss"')
-    parser.add_argument('-lf', '--log_frequency', type=int, default=30000, help='Number of iters required for next log')
+    parser.add_argument('-lf', '--log_frequency', type=int, default=20000, help='Number of iters required for next log')
     parser.add_argument('-att', '--attention', type=str, default='True', help='Whether to choose attention mechanism')
     # parser.add_argument('', '', type=str, default='', help='')
 
