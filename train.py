@@ -55,7 +55,6 @@ if __name__ == '__main__':
         'LOSS':args.loss,
         'LF':args.log_frequency,
         'ATTENTION':args.attention,
-        # '':,
     }
 
     metrics, test_metrics = main(args.data_path, args.input_lang, args.output_lang, config, eval_test=True)
