@@ -342,11 +342,10 @@ def valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, 
             if decoder_input.item() == EOS_token:
                 break
 
-        input_chars = [c.detach().item() for c in input_tensor]
-        acc = float(input_chars == decoded_chars)
+        target_chars = [c.detach().item() for c in target_tensor]
+        acc = float(target_chars == decoded_chars)
 
         return loss.item() / target_length, acc
-
 
 def predict(encoder, decoder, input_lang, output_lang, word, max_length, device):
     # CHANGE DECODED WORDS TO DECODER CHARS AND SO ON
