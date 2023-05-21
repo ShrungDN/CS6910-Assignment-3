@@ -32,7 +32,5 @@ print('Test Loss:', test_loss)
 print('Test Accuracy:', test_acc)
 predictRandomly(encoder, decoder, input_lang, output_lang, test_pairs, config_max_length, device, 30)
 if test_attentions is not None:
-        
-        fig = plt.matshow(test_attentions)
-        fig.save('Attentions.png')
-        plt.show()
+    with open(args.load_location + 'attentions', 'wb') as file:
+      pickle.dump(test_attentions, file)
