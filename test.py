@@ -5,15 +5,14 @@ from train import *
 
 args = parse_arguments()
 
-# model_path = 'D:\IITM Academic Stuff\Sem 8 Books\CS6910\CS6910-Assignment-3\models\LSTM_False_0.358154296875\\'
 model_path = args.load_location
 
-with open(model_path+'decoder', 'rb') as file:
-    decoder = pickle.load(file)
-    print('Decoder Loaded...')
 with open(model_path+'encoder', 'rb') as file:
     encoder = pickle.load(file)
     print('Encoder Loaded...')
+with open(model_path+'decoder', 'rb') as file:
+    decoder = pickle.load(file)
+    print('Decoder Loaded...')
 with open(model_path+'inp_lang', 'rb') as file:
     input_lang = pickle.load(file)
     print('Input Lang Loaded...')

@@ -2,10 +2,8 @@ from helper_functions import *
 from models import *
 from parse_args import parse_arguments
 import matplotlib.pyplot as plt
-import pickle
-import os
 
-def main(data_path, inp_lang_name, out_lang_name, config, save_location, eval_test=False):
+def main(data_path, inp_lang_name, out_lang_name, config, eval_test=False):
     CELL = config['CELL']
     EMBEDDING_SIZE = config['EMBEDDING_SIZE']
     NUM_LAYERS = config['NUM_LAYERS']
@@ -23,30 +21,22 @@ def main(data_path, inp_lang_name, out_lang_name, config, save_location, eval_te
         decoder = DecoderRNN(CELL, output_lang.n_chars, EMBEDDING_SIZE, HIDDEN_SIZE, NUM_LAYERS, BIDIRECTIONAL, DROPOUT, device).to(device)
     elif config['ATTENTION'] == 'True':
         decoder = AttnDecoderRNN(CELL, output_lang.n_chars, EMBEDDING_SIZE, HIDDEN_SIZE, NUM_LAYERS, BIDIRECTIONAL, DROPOUT, device).to(device)
-
     metrics = train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid_pairs, config, device, print_every=config['LF'])
 
     predictRandomly(encoder, decoder, input_lang, output_lang, valid_pairs, config['MAX_LENGTH'], device, 20)
 
-    filename = save_location + '{}_{}_{}/'.format(config['CELL'], config['ATTENTION'], metrics['val_acc'][-1])
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename+'encoder', 'wb') as file:
-        pickle.dump(encoder, file)
-    with open(filename+'decoder', 'wb') as file:
-        pickle.dump(decoder, file)
-    with open(filename+'inp_lang', 'wb') as file:
-        pickle.dump(input_lang, file)
-    with open(filename+'out_lang', 'wb') as file:
-        pickle.dump(output_lang, file)
-    with open(filename+'test_pairs', 'wb') as file:
-        pickle.dump(test_pairs, file)
-    with open(filename+'config_loss', 'wb') as file:
-        pickle.dump(config['LOSS'], file)
-    with open(filename+'config_max_length', 'wb') as file:
-        pickle.dump(config['MAX_LENGTH'], file)
+    full_model = {
+        'encoder': encoder,
+        'decoder': decoder,
+        'inp_lang': input_lang,
+        'out_lang': output_lang,
+        'test_pairs': test_pairs,
+        'config_loss': config['LOSS'],
+        'config_max_length': config['MAX_LENGTH']
+    }
 
     if not eval_test:
-        return metrics, None
+        return full_model, metrics, None
     else:
         test_loss, test_acc, test_attentions = validIters(encoder, decoder, input_lang, output_lang, test_pairs, config['LOSS'], config['MAX_LENGTH'], device)
         test_metrics = {
@@ -54,7 +44,7 @@ def main(data_path, inp_lang_name, out_lang_name, config, save_location, eval_te
             'test_acc': test_acc,
             'test_attentions': test_attentions
         }
-        return metrics, test_metrics
+        return full_model, metrics, test_metrics
     
 if __name__ == '__main__':
     args = parse_arguments()
@@ -76,11 +66,8 @@ if __name__ == '__main__':
         'ATTENTION':args.attention,
     }
 
-    metrics, test_metrics = main(args.data_path, args.input_lang, args.output_lang, config, eval_test=True)
+    full_model, metrics, test_metrics = main(args.data_path, args.input_lang, args.output_lang, config, eval_test=True)
     print(metrics, test_metrics)
     if test_metrics['test_attentions'] is not None:
         plt.matshow(test_metrics['test_attentions'])
         plt.show()
-
-    
-    

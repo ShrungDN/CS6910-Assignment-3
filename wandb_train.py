@@ -1,6 +1,8 @@
 import wandb
 from train import *
 from sweep_configs import get_config
+import pickle 
+import os
 
 args = parse_arguments()
 
@@ -39,7 +41,7 @@ def wandb_train():
   name = 'cell:{}_lr:{}_es:{}_hs:{}_att:{}'.format(config['CELL'], config['LR'], config['EMBEDDING_SIZE'], config['HIDDEN_SIZE'], config['ATTENTION'])
   run.name = name
 
-  logs, _ = main(args.data_path, args.input_lang, args.output_lang, args.save_location, config, eval_test=False)
+  full_model, logs, _ = main(args.data_path, args.input_lang, args.output_lang, config, eval_test=False)
 
   for i in range(len(logs['iters'])):
     wandb.log({
@@ -49,6 +51,25 @@ def wandb_train():
         'val_acc': logs['val_acc'][i], 
         'val_loss': logs['val_loss'][i]
     })
+  
+
+  save_location = args.save_location
+  filename = save_location + '{}_{}_{}/'.format(config['CELL'], config['ATTENTION'], logs['val_acc'][-1])
+  os.makedirs(os.path.dirname(filename), exist_ok=True)
+  with open(filename+'encoder', 'wb') as file:
+      pickle.dump(full_model['encoder'], file)
+  with open(filename+'decoder', 'wb') as file:
+      pickle.dump(full_model['decoder'], file)
+  with open(filename+'inp_lang', 'wb') as file:
+      pickle.dump(full_model['inp_lang'], file)
+  with open(filename+'out_lang', 'wb') as file:
+      pickle.dump(full_model['out_lang'], file)
+  with open(filename+'test_pairs', 'wb') as file:
+      pickle.dump(full_model['test_pairs'], file)
+  with open(filename+'config_loss', 'wb') as file:
+      pickle.dump(full_model['config_loss'], file)
+  with open(filename+'config_max_length', 'wb') as file:
+      pickle.dump(full_model['config_max_length'], file)
   
   wandb.finish()
 
