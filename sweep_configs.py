@@ -1,4 +1,4 @@
-SC1_1 = {
+SC1 = {
     'name': 'SC1',
     'method': 'bayes',
     'name': 'sweep',
@@ -22,8 +22,8 @@ SC1_1 = {
 }
 
 def get_config(name):
-    if name == 'SC1_1':
-        return SC1_1
+    if name == 'SC1':
+        return SC1
     # elif name == 'SC1_2':
     #     return SC1_2
     # elif name == 'SC1_3':

@@ -24,7 +24,7 @@ def main(data_path, inp_lang_name, out_lang_name, config, eval_test=False):
 
     metrics = train_valIters(encoder, decoder, input_lang, output_lang, train_pairs, valid_pairs, config, device, print_every=config['LF'])
 
-    predictRandomly(encoder, decoder, input_lang, output_lang, valid_pairs, config['MAX_LENGTH'], device, 20)
+    # predictRandomly(encoder, decoder, input_lang, output_lang, valid_pairs, config['MAX_LENGTH'], device, 20)
 
     if not eval_test:
         return metrics, None
