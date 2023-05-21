@@ -393,7 +393,7 @@ def valid(input_tensor, target_tensor, encoder, decoder, criterion, max_length, 
         acc = float(target_chars == decoded_chars)
 
         if decoder.attention:
-            return loss.item() / target_length, acc, decoder_attentions[:di]
+            return loss.item() / target_length, acc, decoder_attentions[:di + 1]
         else:
             return loss.item() / target_length, acc, None
 
