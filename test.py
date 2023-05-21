@@ -2,6 +2,7 @@ import os
 import pickle
 from helper_functions import *
 from train import *
+import pandas as pd
 
 args = parse_arguments()
 
@@ -30,7 +31,18 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 test_loss, test_acc, test_attentions = validIters(encoder, decoder, input_lang, output_lang, test_pairs, config_loss, config_max_length, device)
 print('Test Loss:', test_loss)
 print('Test Accuracy:', test_acc)
-predictRandomly(encoder, decoder, input_lang, output_lang, test_pairs, config_max_length, device, 30)
-if test_attentions is not None:
-    with open(args.load_location + 'attentions', 'wb') as file:
-      pickle.dump(test_attentions.numpy(), file)
+# predictRandomly(encoder, decoder, input_lang, output_lang, test_pairs, config_max_length, device, 30)
+
+# if test_attentions is not None:
+#     with open(args.load_location + 'attentions', 'wb') as file:
+#       pickle.dump(test_attentions.numpy(), file)
+
+test_predicted_pairs = [(test_pairs[0], test_pairs[1], predict(encoder, decoder, input_lang, output_lang, test_pairs[0], 30, device))]
+inputs = [p[0] for p in test_predicted_pairs]
+actual = [p[1] for p in test_predicted_pairs]
+preds = [p[2] for p in test_predicted_pairs]
+
+df = pd.DataFrame({'Input Word': inputs, 
+                   'Actual Output':actual,
+                    'Predicted Output': preds})
+df.to_csv('Predictions.csv')
