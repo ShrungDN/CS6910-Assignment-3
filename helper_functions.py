@@ -48,11 +48,6 @@ def readLangs(data_path, lang1='eng', lang2='kan'):
     valid_pairs = [(valid_df.iloc[i,0], valid_df.iloc[i,1]) for i in range(len(valid_df))]
     test_pairs = [(test_df.iloc[i,0], test_df.iloc[i,1]) for i in range(len(test_df))]
 
-
-    valid_pairs = valid_pairs[:20]
-    test_pairs = test_pairs[:20]
-
-
     input_lang = Language(lang1)
     output_lang = Language(lang2)
     return input_lang, output_lang, train_pairs, valid_pairs, test_pairs

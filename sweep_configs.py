@@ -14,7 +14,7 @@ SC1 = {
         'teacher_forcing': {'values': [0.5]},
         'max_length': {'values': [30]},
         'learning_rate': {'values': [0.01, 0.001]},
-        'epochs': {'values': [2]},
+        'epochs': {'values': [50000]},
         'optimizer': {'values': ['SGD']},
         'loss': {'values': ['NLLLoss']},
         'attention': {'values': ['True', 'False']},
