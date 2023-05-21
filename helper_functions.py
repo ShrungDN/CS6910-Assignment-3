@@ -262,7 +262,7 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     target_chars = [c.detach().item() for c in target_tensor]
     
     acc = float(target_chars == decoded_chars)
-    print(target_chars, decoded_chars)
+
     loss.backward()
 
     # INSTEAD OF DOING LOSS BACKWARD HERE FOR EACH AND EVERY PAIR, GET A BUNCH OF PAIRS, CALC TOTAL LOSS AND DO LOSS BACKWARD. 
