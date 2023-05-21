@@ -1,6 +1,7 @@
 import argparse
 
 def parse_arguments():
+    # function used to parse arguments given through the command line
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-dp', '--data_path', type=str, default='./data/aksharantar_sampled/', help='Path to data used')

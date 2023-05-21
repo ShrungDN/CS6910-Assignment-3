@@ -15,6 +15,7 @@ SOS_token = 0
 EOS_token = 1
 
 class Language:
+    # Defining a language class to keep track of attributes of the language like number of characters, character to index encoding
     def __init__(self, name):
         self.name = name
         self.char2index = {}
@@ -23,10 +24,12 @@ class Language:
         self.n_chars = 2
 
     def addWord(self, word):
+        # Function to read a word and the characters to it to vocabulary
         for char in word:
             self.addChar(char)
 
     def addChar(self, char):
+        # Adding character to vocabulary
         if char not in self.char2index:
             self.char2index[char] = self.n_chars
             self.char2count[char] = 1
@@ -36,6 +39,7 @@ class Language:
             self.char2count[char] += 1
 
 def readLangs(data_path, lang1='eng', lang2='kan'):
+    # Read data from files and generating input and output language classes and pairs
     train_path = os.path.join(data_path, lang2, lang2 + '_train.csv')
     valid_path = os.path.join(data_path, lang2, lang2 + '_valid.csv')
     test_path = os.path.join(data_path, lang2, lang2 + '_test.csv')
@@ -53,6 +57,7 @@ def readLangs(data_path, lang1='eng', lang2='kan'):
     return input_lang, output_lang, train_pairs, valid_pairs, test_pairs
 
 def filterPairs(pairs, MAX_LENGTH):
+    # Remove very long words from training to remove outliers
     return [p for p in pairs if (len(p[0]) <= MAX_LENGTH and len(p[1]) <= MAX_LENGTH)]
 
 def prepareData(data_path, lang1, lang2, MAX_LENGTH):

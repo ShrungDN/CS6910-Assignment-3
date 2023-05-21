@@ -138,28 +138,28 @@ SC6 = {
 }
 
 
-SCtemp = {
-    'name': 'SC6',
-    'method': 'bayes',
-    'name': 'sweep',
-    'metric': {'goal': 'maximize', 'name': 'val_acc'},
-    'parameters': 
-    {
-        'cell': {'values': ["GRU", "LSTM"]},
-        'embedding_size': {'values': [128, 256, 512]},
-        'num_layers': {'values': [2, 3]},
-        'hidden_size': {'values': [128, 256]},
-        'bidirectional': {'values': ['True']},
-        'dropout': {'values': [0.2]},
-        'teacher_forcing': {'values': [0.5]},
-        'max_length': {'values': [30]},
-        'learning_rate': {'values': [0.01, 0.02]},
-        'epochs': {'values': [10000]},
-        'optimizer': {'values': ['SGD']},
-        'loss': {'values': ['NLLLoss']},
-        'attention': {'values': ['True']},
-    }
-}
+# SCtemp = {
+#     'name': 'SC6',
+#     'method': 'bayes',
+#     'name': 'sweep',
+#     'metric': {'goal': 'maximize', 'name': 'val_acc'},
+#     'parameters': 
+#     {
+#         'cell': {'values': ["GRU", "LSTM"]},
+#         'embedding_size': {'values': [128, 256, 512]},
+#         'num_layers': {'values': [2, 3]},
+#         'hidden_size': {'values': [128, 256]},
+#         'bidirectional': {'values': ['True']},
+#         'dropout': {'values': [0.2]},
+#         'teacher_forcing': {'values': [0.5]},
+#         'max_length': {'values': [30]},
+#         'learning_rate': {'values': [0.01, 0.02]},
+#         'epochs': {'values': [10000]},
+#         'optimizer': {'values': ['SGD']},
+#         'loss': {'values': ['NLLLoss']},
+#         'attention': {'values': ['True']},
+#     }
+# }
 
 def get_config(name):
     if name == 'SC1':
@@ -174,8 +174,8 @@ def get_config(name):
         return SC5
     elif name == 'SC6':
         return SC6
-    elif name == 'temp':
-        return SCtemp
+    # elif name == 'temp':
+    #     return SCtemp
     # elif name == 'SC4_2':
     #     return SC4_2
     # elif name == 'SC4_3':
