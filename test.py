@@ -34,5 +34,5 @@ predictRandomly(encoder, decoder, input_lang, output_lang, test_pairs, config_ma
 if test_attentions is not None:
         
         fig = plt.matshow(test_attentions)
-        fig.save('Attentions')
+        fig.save('Attentions.png')
         plt.show()
