@@ -37,7 +37,7 @@ print('Test Accuracy:', test_acc)
 #     with open(args.load_location + 'attentions', 'wb') as file:
 #       pickle.dump(test_attentions.numpy(), file)
 
-test_predicted_pairs = [(test_pairs[0], test_pairs[1], predict(encoder, decoder, input_lang, output_lang, test_pairs[0], 30, device))]
+test_predicted_pairs = [(p[0], p[1], predict(encoder, decoder, input_lang, output_lang, p[0], 30, device)) for p in test_pairs]
 inputs = [p[0] for p in test_predicted_pairs]
 actual = [p[1] for p in test_predicted_pairs]
 preds = [p[2] for p in test_predicted_pairs]
