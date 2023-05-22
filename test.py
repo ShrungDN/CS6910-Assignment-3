@@ -77,7 +77,7 @@ if decoder.attention:
     print('Number of characters: Input: ', len(sample[0]), 'Predicted: ', len(sample[1]))
     print('Shape of att: ', att.shape)
     print('shape of att_new: ', att.shape)
-    att = att[:, len(sample[0])]
+    att = att[:, :len(sample[0])]
     fig, ax = plt.subplots(1, 1)
     ax.imshow(att)
     fig.show()
