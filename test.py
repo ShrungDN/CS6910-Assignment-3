@@ -37,35 +37,29 @@ with open(model_path+'/config_loss', 'rb') as file:
 #     config_max_length = pickle.load(file)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# test_loss, test_acc, _ = validIters(encoder, decoder, input_lang, output_lang, test_pairs, config_loss, config_max_length, device)
-# print('Test Loss:', test_loss)
-# print('Test Accuracy:', test_acc)
+test_loss, test_acc, _ = validIters(encoder, decoder, input_lang, output_lang, test_pairs, config_loss, config_max_length, device)
+print('Test Loss:', test_loss)
+print('Test Accuracy:', test_acc)
 
-# test_predicted_pairs = [(p[0], p[1], ''.join(predict(encoder, decoder, input_lang, output_lang, p[0], 30, device))) for p in test_pairs]
-# inputs = [p[0] for p in test_predicted_pairs]
-# actual = [p[1] for p in test_predicted_pairs]
-# preds = [p[2] for p in test_predicted_pairs]
+test_predicted_pairs = [(p[0], p[1], ''.join(predict(encoder, decoder, input_lang, output_lang, p[0], 30, device))) for p in test_pairs]
+inputs = [p[0] for p in test_predicted_pairs]
+actual = [p[1] for p in test_predicted_pairs]
+preds = [p[2] for p in test_predicted_pairs]
 
-# df = pd.DataFrame({'Input Word': inputs, 
-#                    'Actual Output':actual,
-#                     'Predicted Output': preds})
-# att_str = 'Att' if decoder.attention else 'Vanilla'
-# output_file_name = 'predictions_' + att_str + '_' + str(test_acc) + '.csv'
-# df.to_csv(output_file_name)
+df = pd.DataFrame({'Input Word': inputs, 
+                   'Actual Output':actual,
+                    'Predicted Output': preds})
+att_str = 'Att' if decoder.attention else 'Vanilla'
+output_file_name = 'predictions_' + att_str + '_' + str(test_acc) + '.csv'
+df.to_csv(output_file_name)
 
 if decoder.attention:
     sample = random.choice(test_pairs)
     pred, att = get_preds_atts(encoder, decoder, input_lang, output_lang, sample[0], config_max_length, device)
-    att = np.array(att)
-    att_new = np.squeeze(att)
     print('Number of decoder layers: ', decoder.num_layers)
     print('Input: ', sample, 'Predicted: ', pred)
     print('Number of characters: Input: ', len(sample[0]), 'Predicted: ', len(sample[1]))
     print('Shape of att: ', att.shape)
-    print('shape of att_new: ', att_new.shape)
-    # print('Attention:', att)
-    plt.imshow(att_new)
-    # plt.imshow(att[0])
-    # plt.imshow(att[1])
-    # plt.imshow(att[2])
+    print('shape of att_new: ', att.shape)
+    plt.imshow(att)
     plt.show()
