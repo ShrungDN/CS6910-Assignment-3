@@ -90,7 +90,7 @@ if decoder.attention:
         xticks = [c for c in sample[0]]
         yticks = [c for c in pred]
         sns.heatmap(att, ax=ax, cmap='crest', xticklabels=xticks, yticklabels=yticks)
-        ax.set_title(sample[0] + pred)
+        ax.set_title(sample[0])
         # ax.imshow(att)
         # ax.set_xticks([])
         # ax.set_yticks([])
