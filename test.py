@@ -81,6 +81,7 @@ if decoder.attention:
     # att = att[:, :len(sample[0])]
     fig, axs = plt.subplots(3, 3, figsize=(30,30))
     for ax in axs.reshape(-1):
+        sns.set(font_scale=2)
         while True:
             sample = random.choice(test_pairs)
             if len(sample[0])<=10 and len(sample[1])<=10:
