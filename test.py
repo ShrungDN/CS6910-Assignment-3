@@ -5,6 +5,7 @@ from train import *
 import pandas as pd
 import numpy as np
 import wandb
+import seaborn as sns
 
 # This code is used to read a model from a pickle file and then generate predictions on the test data
 
@@ -86,9 +87,10 @@ if decoder.attention:
                 break
         pred, att = get_preds_atts(encoder, decoder, input_lang, output_lang, sample[0], config_max_length, device)
         att = att[:, :len(sample[0])]
-        ax.imshow(att)
-        ax.set_xticks([])
-        ax.set_yticks([])
+        sns.heatmap(att, ax=ax)
+        # ax.imshow(att)
+        # ax.set_xticks([])
+        # ax.set_yticks([])
     fig.show()
     plt.show()
     if args.wandb_log == 'True':
