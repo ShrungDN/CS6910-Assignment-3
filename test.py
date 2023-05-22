@@ -64,7 +64,7 @@ if decoder.attention:
     print('Shape of att: ', att.shape)
     print('shape of att_new: ', att_new.shape)
     # print('Attention:', att)
-    plt.imshow(att)
+    plt.imshow(att_new)
     plt.imshow(att[0])
     plt.imshow(att[1])
     plt.imshow(att[2])
