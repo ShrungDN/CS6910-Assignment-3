@@ -98,4 +98,4 @@ if decoder.attention:
     fig.show()
     plt.show()
     if args.wandb_log == 'True':
-        wandb.log({'Attention Map': fig})
+        wandb.log({'Attention Map': wandb.Image(fig)})
