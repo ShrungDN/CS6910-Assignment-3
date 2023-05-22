@@ -78,7 +78,7 @@ if decoder.attention:
     # print('Shape of att: ', att.shape)
     # print('shape of att_new: ', att.shape)
     # att = att[:, :len(sample[0])]
-    fig, axs = plt.subplots(3, 3)
+    fig, axs = plt.subplots(3, 3, figsize=(30,30))
     for ax in axs.reshape(-1):
         while True:
             sample = random.choice(test_pairs)
@@ -87,6 +87,8 @@ if decoder.attention:
         pred, att = get_preds_atts(encoder, decoder, input_lang, output_lang, sample[0], config_max_length, device)
         att = att[:, :len(sample[0])]
         ax.imshow(att)
+        ax.set_xticks([])
+        ax.set_yticks([])
     fig.show()
     plt.show()
     if args.wandb_log == 'True':
