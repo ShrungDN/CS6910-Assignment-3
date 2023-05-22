@@ -482,7 +482,7 @@ def get_preds_atts(encoder, decoder, input_lang, output_lang, word, max_length, 
                 if decoder.attention:
                     decoder_output, decoder_hidden, decoder_attention, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
             topv, topi = decoder_output.data.topk(1)
-            decoder_attentions.append(decoder_attention)
+            decoder_attentions.append(decoder_attention.cpu().numpy())
             if topi.item() == EOS_token:
                 decoded_words.append('<EOS>')
                 break
