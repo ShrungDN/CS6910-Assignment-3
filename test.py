@@ -50,11 +50,11 @@ if args.wandb_log == 'True':
     NAME = args.wandb_name
 
     wandb.login()
-    run = wandb.init(entity=ENTITY, project=PROJECT, name=NAME)
+    # run = wandb.init(entity=ENTITY, project=PROJECT, name=NAME)
 
-    wandb.log({
-        'Test Loss': test_loss,
-        'Test ACcuracy': test_acc})
+    # wandb.log({
+    #     'Test Loss': test_loss,
+    #     'Test ACcuracy': test_acc})
 
 # Generating predictions.csv
 test_predicted_pairs = [(p[0], p[1], ''.join(predict(encoder, decoder, input_lang, output_lang, p[0], 30, device))) for p in test_pairs]
