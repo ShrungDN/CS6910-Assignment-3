@@ -493,4 +493,4 @@ def get_preds_atts(encoder, decoder, input_lang, output_lang, word, max_length, 
             decoder_input = topi.squeeze().detach()
             predicted = ''.join(decoded_words)
         
-        return predicted, decoder_attentions[:di+1].cpu().numpy()
+        return predicted, decoder_attentions[:di+1].cpu().numpy()/
