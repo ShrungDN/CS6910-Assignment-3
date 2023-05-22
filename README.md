@@ -5,11 +5,6 @@ WandB Project Link: https://wandb.ai/me19b168/ME19B168_CS6910_Assignment3?worksp
 
 WandB Report Link: https://wandb.ai/me19b168/ME19B168_CS6910_Assignment3/reports/ME19B168-CS6910-Assignment-3--Vmlldzo0NDI0NjYx
 
-(I have uploaded a slightly modified pdf version on github for the timestamp. As it is only 50 minutes late, I request you to consider this newer version for evalutaion.)
-
-(I have also made a few changes to the github repository within 2 hours after the deadline, please do consider these as well.)
-
-
 ## Description of files:
 
 **helper_functions.py**: 
@@ -36,7 +31,7 @@ Python file that makes use of train.py to iteratively train multiple models usin
 
 Note: The sript to train a particular model is done through the train.py. The script used to tune hyperparameters (by generating sweeps) is done through the wandb_train.py file.
 
-**ME19B168-CS6910-Assignment-3-new.pdf**
+**ME19B168-CS6910-Assignment-3.pdf**
 PDF of WandB report for the assignment 
 
 **predictions_attention.csv**
@@ -70,13 +65,16 @@ usage: python3 train.py [-h --help]
 
 ## test.py Usage
 ```
-CHANGE THIS
-
-
-
-
 usage: python3 test.py [-h --help]
+                       [-wl --wandb_log] <"True", "False> Logs results on wandb if True
+                       [-wp --wandb_project] <string> Name of WandB Projec
+                       [-we --wandb_entity] <string> Username of WandB user
+                       [-wn --wandb_name] <string> Name of WandB run
+                       [-dp --data_path] <string> Path to directory with training, testing and validation data 
                        [-ll --load_location] <string> File location used for loading models 
+                       [-il --input_lang] <string> Input language name
+                       [-ol --output_lang] <string> Output language to be chosen from the different language available
+                       [-ml --max_length] <int> Max length of words used for training
 ```
 
 ## wandb_train.py Usage
