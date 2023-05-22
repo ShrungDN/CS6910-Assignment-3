@@ -57,6 +57,7 @@ if decoder.attention:
     sample = random.choice(test_pairs)
     pred, att = get_preds_atts(encoder, decoder, input_lang, output_lang, sample[0], config_max_length, device)
     att = np.array(att)
+    att = np.squeeze(att)
     print('Input: ', sample, 'Predicted: ', pred)
     print('Attention:', att)
     print('len of list:', len(att))
