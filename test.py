@@ -50,25 +50,25 @@ if args.wandb_log == 'True':
     NAME = args.wandb_name
 
     wandb.login()
-    # run = wandb.init(entity=ENTITY, project=PROJECT, name=NAME)
+    run = wandb.init(entity=ENTITY, project=PROJECT, name=NAME)
 
     # wandb.log({
     #     'Test Loss': test_loss,
     #     'Test ACcuracy': test_acc})
 
 # Generating predictions.csv
-test_predicted_pairs = [(p[0], p[1], ''.join(predict(encoder, decoder, input_lang, output_lang, p[0], 30, device))) for p in test_pairs]
-inputs = [p[0] for p in test_predicted_pairs]
-actual = [p[1] for p in test_predicted_pairs]
-preds = [p[2] for p in test_predicted_pairs]
+# test_predicted_pairs = [(p[0], p[1], ''.join(predict(encoder, decoder, input_lang, output_lang, p[0], 30, device))) for p in test_pairs]
+# inputs = [p[0] for p in test_predicted_pairs]
+# actual = [p[1] for p in test_predicted_pairs]
+# preds = [p[2] for p in test_predicted_pairs]
 
-df = pd.DataFrame({'Input Word': inputs, 
-                   'Actual Output':actual,
-                    'Predicted Output': preds})
+# df = pd.DataFrame({'Input Word': inputs, 
+#                    'Actual Output':actual,
+#                     'Predicted Output': preds})
 
-att_str = 'Att' if decoder.attention else 'Vanilla'
-output_file_name = 'predictions_' + att_str + '_' + str(test_acc) + '.csv'
-df.to_csv(output_file_name)
+# att_str = 'Att' if decoder.attention else 'Vanilla'
+# output_file_name = 'predictions_' + att_str + '_' + str(test_acc) + '.csv'
+# df.to_csv(output_file_name)
 
 if decoder.attention:
     # sample = random.choice(test_pairs)
