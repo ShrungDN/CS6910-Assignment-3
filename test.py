@@ -93,7 +93,7 @@ if decoder.attention:
         ax.set_title(sample[0])
         ax.set_xlabel('Input Word')
         ax.set_ylabel('Output Word')
-        plt.xticks(fontsize=5, rotation=90)
+        plt.xticks(fontsize=7, rotation=90)
     fig.show()
     plt.show()
     if args.wandb_log == 'True':
