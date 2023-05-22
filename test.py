@@ -80,5 +80,6 @@ if decoder.attention:
     fig, ax = plt.subplots(1, 1)
     ax.imshow(att)
     fig.show()
+    plt.show()
     if args.wandb_log == 'True':
         wandb.log({'Attention Map': fig})
