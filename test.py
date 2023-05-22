@@ -88,7 +88,7 @@ if decoder.attention:
         pred, att = get_preds_atts(encoder, decoder, input_lang, output_lang, sample[0], config_max_length, device)
         att = att[:, :len(sample[0])]
         xticks = [c for c in sample[0]]
-        yticks = [c for c in pred]
+        yticks = [c for c in pred] + ['<EOS>']
         sns.heatmap(att, ax=ax, cmap='crest', xticklabels=xticks, yticklabels=yticks)
         ax.set_title(sample[0])
         ax.set_xlabel('Input Word')
