@@ -54,8 +54,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # df.to_csv(output_file_name)
 
 if decoder.attention:
-    # sample = random.choice(test_pairs)
-    sample = test_pairs[1]
+    sample = random.choice(test_pairs)
     pred, att = get_preds_atts(encoder, decoder, input_lang, output_lang, sample[0], config_max_length, device)
     att = np.array(att)
     att_new = np.squeeze(att)
