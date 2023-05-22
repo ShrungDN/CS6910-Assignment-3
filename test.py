@@ -91,7 +91,9 @@ if decoder.attention:
         yticks = [c for c in pred]
         sns.heatmap(att, ax=ax, cmap='crest', xticklabels=xticks, yticklabels=yticks)
         ax.set_title(sample[0])
-        ax.set_xticks(fontsize=14, rotation=90)
+        ax.set_xlable('Input Word')
+        ax.set_ylable('Output Word')
+        plt.xticks(fontsize=14, rotation=90)
     fig.show()
     plt.show()
     if args.wandb_log == 'True':
