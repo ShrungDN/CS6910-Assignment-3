@@ -41,6 +41,7 @@ test_loss, test_acc, _ = validIters(encoder, decoder, input_lang, output_lang, t
 print('Test Loss:', test_loss)
 print('Test Accuracy:', test_acc)
 
+# Generating predictions.csv
 test_predicted_pairs = [(p[0], p[1], ''.join(predict(encoder, decoder, input_lang, output_lang, p[0], 30, device))) for p in test_pairs]
 inputs = [p[0] for p in test_predicted_pairs]
 actual = [p[1] for p in test_predicted_pairs]
