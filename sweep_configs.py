@@ -124,15 +124,15 @@ SC6 = {
     'parameters': 
     {
         'cell': {'values': ["GRU", "LSTM"]},
-        'embedding_size': {'values': [128, 256, 512]},
+        'embedding_size': {'values': [128, 256]},
         'num_layers': {'values': [2, 3]},
         'hidden_size': {'values': [128, 256]},
         'bidirectional': {'values': ['True']},
-        'dropout': {'values': [0.2]},
+        'dropout': {'values': [0.1, 0.2]},
         'teacher_forcing': {'values': [0.5]},
         'max_length': {'values': [30]},
         'learning_rate': {'values': [0.01, 0.02]},
-        'epochs': {'values': [50000, 60000, 70000]},
+        'epochs': {'values': [50000, 60000, 70000, 80000]},
         'optimizer': {'values': ['SGD']},
         'loss': {'values': ['NLLLoss']},
         'attention': {'values': ['True']},
