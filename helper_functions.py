@@ -472,7 +472,7 @@ def get_preds_atts(encoder, decoder, input_lang, output_lang, word, max_length, 
         decoder_cell_state = encoder_cell_state
 
         decoded_words = []
-        decoder_attentions = []
+        decoder_attentions = torch.zeros(max_length, max_length)
 
         for di in range(max_length):
             if decoder.cell_type != 'LSTM':
@@ -482,7 +482,8 @@ def get_preds_atts(encoder, decoder, input_lang, output_lang, word, max_length, 
                 if decoder.attention:
                     decoder_output, decoder_hidden, decoder_attention, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
             topv, topi = decoder_output.data.topk(1)
-            decoder_attentions.append(decoder_attention.cpu().numpy())
+            # decoder_attentions.append(decoder_attention.cpu().numpy())
+            decoder_attentions[di] = decoder_attention.data
             if topi.item() == EOS_token:
                 decoded_words.append('<EOS>')
                 break
@@ -492,4 +493,4 @@ def get_preds_atts(encoder, decoder, input_lang, output_lang, word, max_length, 
             decoder_input = topi.squeeze().detach()
             predicted = ''.join(decoded_words)
         
-        return predicted, decoder_attentions
+        return predicted, decoder_attentions.cpu().numpy()
