@@ -3,6 +3,7 @@ import pickle
 from helper_functions import *
 from train import *
 import pandas as pd
+import numpy as np
 
 # This code is used to read a model from a pickle file and then generate predictions on the test data
 
@@ -55,9 +56,10 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 if decoder.attention:
     sample = random.choice(test_pairs)
     pred, att = get_preds_atts(encoder, decoder, input_lang, output_lang, sample[0], config_max_length, device)
+    att = np.array(att)
     print('Input: ', sample, 'Predicted: ', pred)
     print('Attention:', att)
     print('len of list:', len(att))
-    print(att[0].shape)
-    plt.imshow(att[0])
+    print(att.shape)
+    plt.imshow(att)
     plt.show()
