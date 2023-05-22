@@ -81,7 +81,7 @@ if decoder.attention:
     # att = att[:, :len(sample[0])]
     fig, axs = plt.subplots(3, 3, figsize=(30,30))
     for ax in axs.reshape(-1):
-        sns.set(font_scale=2)
+        # sns.set(font_scale=2)
         while True:
             sample = random.choice(test_pairs)
             if len(sample[0])<=10 and len(sample[1])<=10:
@@ -94,7 +94,7 @@ if decoder.attention:
         ax.set_title(sample[0])
         ax.set_xlabel('Input Word')
         ax.set_ylabel('Output Word')
-        plt.xticks(fontsize=7, rotation=90)
+        # plt.xticks(fontsize=7, rotation=90)
     fig.show()
     plt.show()
     if args.wandb_log == 'True':
