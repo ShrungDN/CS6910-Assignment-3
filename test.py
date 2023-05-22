@@ -4,6 +4,7 @@ from helper_functions import *
 from train import *
 import pandas as pd
 import numpy as np
+import wandb
 
 # This code is used to read a model from a pickle file and then generate predictions on the test data
 
@@ -41,18 +42,32 @@ test_loss, test_acc, _ = validIters(encoder, decoder, input_lang, output_lang, t
 print('Test Loss:', test_loss)
 print('Test Accuracy:', test_acc)
 
-# Generating predictions.csv
-test_predicted_pairs = [(p[0], p[1], ''.join(predict(encoder, decoder, input_lang, output_lang, p[0], 30, device))) for p in test_pairs]
-inputs = [p[0] for p in test_predicted_pairs]
-actual = [p[1] for p in test_predicted_pairs]
-preds = [p[2] for p in test_predicted_pairs]
+if args.wandb_log == 'True':
+    import wandb
+    ENTITY = args.wandb_entity
+    PROJECT = args.wandb_project
+    NAME = args.wandb_name
 
-df = pd.DataFrame({'Input Word': inputs, 
-                   'Actual Output':actual,
-                    'Predicted Output': preds})
-att_str = 'Att' if decoder.attention else 'Vanilla'
-output_file_name = 'predictions_' + att_str + '_' + str(test_acc) + '.csv'
-df.to_csv(output_file_name)
+    wandb.login()
+    run = wandb.init(entity=ENTITY, project=PROJECT, name=NAME)
+
+    wandb.log({
+        'Test Loss': test_loss,
+        'Test ACcuracy': test_acc})
+
+# # Generating predictions.csv
+# test_predicted_pairs = [(p[0], p[1], ''.join(predict(encoder, decoder, input_lang, output_lang, p[0], 30, device))) for p in test_pairs]
+# inputs = [p[0] for p in test_predicted_pairs]
+# actual = [p[1] for p in test_predicted_pairs]
+# preds = [p[2] for p in test_predicted_pairs]
+
+# df = pd.DataFrame({'Input Word': inputs, 
+#                    'Actual Output':actual,
+#                     'Predicted Output': preds})
+
+# att_str = 'Att' if decoder.attention else 'Vanilla'
+# output_file_name = 'predictions_' + att_str + '_' + str(test_acc) + '.csv'
+# df.to_csv(output_file_name)
 
 if decoder.attention:
     sample = random.choice(test_pairs)
@@ -62,5 +77,8 @@ if decoder.attention:
     print('Number of characters: Input: ', len(sample[0]), 'Predicted: ', len(sample[1]))
     print('Shape of att: ', att.shape)
     print('shape of att_new: ', att.shape)
-    plt.imshow(att)
-    plt.show()
+    fig, ax = plt.subplots(1, 1)
+    ax.imshow(att)
+    fig.show()
+    if args.wandb_log == 'True':
+        wandb.log({'Attention Map': fig})

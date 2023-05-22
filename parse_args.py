@@ -13,7 +13,7 @@ def parse_arguments():
     parser.add_argument('-wp', '--wandb_project', type=str, default='ME19B168_CS6910_Assignment3', help='Project name on WandB')
     parser.add_argument('-we', '--wandb_entity', type=str, default='ME19B168', help='Username on WandB')
     parser.add_argument('-wn', '--wandb_name', type=str, default='ME19B168', help='Display name of run on WandB')
-    # parser.add_argument('-wl', '--wandb_log', type=str, default='False', help='If "True", results are logged into WandB, specified by wandb_project and wandb_entity')
+    parser.add_argument('-wl', '--wandb_log', type=str, default='False', help='If "True", results are logged into WandB, specified by wandb_project and wandb_entity')
          
     parser.add_argument('-es', '--embedding_size', type=int, default=128, help='Embedding Size')
     parser.add_argument('-nl', '--num_layers', type=int, default=2, help='Number of Encoder-Decoder Layers')
