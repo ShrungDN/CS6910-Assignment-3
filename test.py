@@ -56,7 +56,7 @@ if args.wandb_log == 'True':
         'Test Loss': test_loss,
         'Test ACcuracy': test_acc})
 
-# # Generating predictions.csv
+# # Generating predictions.csv - uncomment below
 # test_predicted_pairs = [(p[0], p[1], ''.join(predict(encoder, decoder, input_lang, output_lang, p[0], 30, device))) for p in test_pairs]
 # inputs = [p[0] for p in test_predicted_pairs]
 # actual = [p[1] for p in test_predicted_pairs]
@@ -71,14 +71,6 @@ if args.wandb_log == 'True':
 # df.to_csv(output_file_name)
 
 if decoder.attention:
-    # sample = random.choice(test_pairs)
-    # pred, att = get_preds_atts(encoder, decoder, input_lang, output_lang, sample[0], config_max_length, device)
-    # print('Number of decoder layers: ', decoder.num_layers)
-    # print('Input: ', sample, 'Predicted: ', pred)
-    # print('Number of characters: Input: ', len(sample[0]), 'Predicted: ', len(sample[1]))
-    # print('Shape of att: ', att.shape)
-    # print('shape of att_new: ', att.shape)
-    # att = att[:, :len(sample[0])]
     fig, axs = plt.subplots(3, 3, figsize=(30,30))
     for ax in axs.reshape(-1):
         while True:
