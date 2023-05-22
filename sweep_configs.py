@@ -155,7 +155,7 @@ SC7 = {
         'teacher_forcing': {'values': [0.5]},
         'max_length': {'values': [30]},
         'learning_rate': {'values': [0.01]},
-        'epochs': {'values': [80000]},
+        'epochs': {'values': [60000]},
         'optimizer': {'values': ['SGD']},
         'loss': {'values': ['NLLLoss']},
         'attention': {'values': ['True']},
