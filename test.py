@@ -38,9 +38,9 @@ with open(model_path+'/config_loss', 'rb') as file:
 #     config_max_length = pickle.load(file)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-test_loss, test_acc, _ = validIters(encoder, decoder, input_lang, output_lang, test_pairs, config_loss, config_max_length, device)
-print('Test Loss:', test_loss)
-print('Test Accuracy:', test_acc)
+# test_loss, test_acc, _ = validIters(encoder, decoder, input_lang, output_lang, test_pairs, config_loss, config_max_length, device)
+# print('Test Loss:', test_loss)
+# print('Test Accuracy:', test_acc)
 
 if args.wandb_log == 'True':
     import wandb
@@ -51,9 +51,9 @@ if args.wandb_log == 'True':
     wandb.login()
     run = wandb.init(entity=ENTITY, project=PROJECT, name=NAME)
 
-    wandb.log({
-        'Test Loss': test_loss,
-        'Test ACcuracy': test_acc})
+    # wandb.log({
+        # 'Test Loss': test_loss,
+        # 'Test ACcuracy': test_acc})
 
 # # Generating predictions.csv
 # test_predicted_pairs = [(p[0], p[1], ''.join(predict(encoder, decoder, input_lang, output_lang, p[0], 30, device))) for p in test_pairs]
