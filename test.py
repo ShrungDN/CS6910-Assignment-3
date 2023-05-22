@@ -81,7 +81,6 @@ if decoder.attention:
     # att = att[:, :len(sample[0])]
     fig, axs = plt.subplots(3, 3, figsize=(30,30))
     for ax in axs.reshape(-1):
-        sns.set(font_scale=5)
         while True:
             sample = random.choice(test_pairs)
             if len(sample[0])<=10 and len(sample[1])<=10:
@@ -92,6 +91,7 @@ if decoder.attention:
         yticks = [c for c in pred]
         sns.heatmap(att, ax=ax, cmap='crest', xticklabels=xticks, yticklabels=yticks)
         ax.set_title(sample[0])
+        ax.set_xticks(fontsize=14, rotation=90)
     fig.show()
     plt.show()
     if args.wandb_log == 'True':
