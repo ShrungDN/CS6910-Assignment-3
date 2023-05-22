@@ -62,5 +62,6 @@ if decoder.attention:
     print('Attention:', att)
     print('len of list:', len(att))
     print(att.shape)
+    print(decoder.num_layers)
     plt.imshow(att)
     plt.show()
