@@ -59,5 +59,5 @@ if decoder.attention:
     print('Attention:', att)
     print('len of list:', len(att))
     print(att[0].shape)
-    plt.imshow(att)
+    plt.imshow(att[0])
     plt.show()
