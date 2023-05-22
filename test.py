@@ -87,7 +87,9 @@ if decoder.attention:
                 break
         pred, att = get_preds_atts(encoder, decoder, input_lang, output_lang, sample[0], config_max_length, device)
         att = att[:, :len(sample[0])]
-        sns.heatmap(att, ax=ax)
+        xticks = [c for c in sample[0]]
+        yticks = [c for c in pred]
+        sns.heatmap(att, ax=ax, cmap='crest', xticklabels=xticks, yticklabels=yticks)
         # ax.imshow(att)
         # ax.set_xticks([])
         # ax.set_yticks([])
