@@ -444,3 +444,52 @@ def predict(encoder, decoder, input_lang, output_lang, word, max_length, device)
             decoder_input = topi.squeeze().detach()
 
         return decoded_words
+    
+def get_preds_atts(encoder, decoder, input_lang, output_lang, word, max_length, device):
+    # Function to predict the output word and also get attentions based on a input word
+    if not decoder.attention:
+        raise Exception('Use a decoder with attention')
+    encoder.eval()
+    decoder.eval()
+    with torch.no_grad():
+        input_tensor = tensorFromChar(input_lang, word, device)
+        input_length = input_tensor.size()[0]
+        encoder_hidden = encoder.initHidden()
+        encoder_cell_state = encoder.initCellState()
+
+        encoder_outputs = torch.zeros(max_length, encoder.bidirectional_size*encoder.hidden_size, device=device)
+
+        for ei in range(input_length):
+            if encoder.cell_type != 'LSTM':
+                encoder_output, encoder_hidden = encoder(input_tensor[ei], encoder_hidden, None)
+            else:
+                encoder_output, encoder_hidden, encoder_cell_state = encoder(input_tensor[ei], encoder_hidden, encoder_cell_state)
+            encoder_outputs[ei] += encoder_output[0, 0]
+
+        decoder_input = torch.tensor([[SOS_token]], device=device) 
+
+        decoder_hidden = encoder_hidden
+        decoder_cell_state = encoder_cell_state
+
+        decoded_words = []
+        decoder_attentions = []
+
+        for di in range(max_length):
+            if decoder.cell_type != 'LSTM':
+                if decoder.attention:
+                    decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs, None)
+            else:
+                if decoder.attention:
+                    decoder_output, decoder_hidden, decoder_attention, decoder_cell_state = decoder(decoder_input, decoder_hidden, encoder_outputs, decoder_cell_state)
+            topv, topi = decoder_output.data.topk(1)
+            decoder_attentions.append(decoder_attention)
+            if topi.item() == EOS_token:
+                decoded_words.append('<EOS>')
+                break
+            else:
+                decoded_words.append(output_lang.index2char[topi.item()])
+
+            decoder_input = topi.squeeze().detach()
+            predicted = ''.join(decoded_words)
+        
+        return predicted, decoder_attentions
